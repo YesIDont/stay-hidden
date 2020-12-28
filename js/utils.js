@@ -1,3 +1,5 @@
+const log = console.log;
+
 // flip a coin to draw true or false
 function flipCoin() {
   return !!Math.round( Math.random() );

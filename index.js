@@ -80,8 +80,8 @@ window.addEventListener("load", function() {
   let flashlightSwitchCooldown = 1;
   
   // Movement
-  let speed = 60;
-  let sprintSpeed = 160;
+  let speed = 1.2;
+  let sprintSpeed = 4;
   let isSprintOn = false;
   let wasOnTheMove = false;
 
@@ -184,19 +184,21 @@ window.addEventListener("load", function() {
   }
 
   const keysBindings = {
-    sprint: 'shift',
     up: 'w',
     down: 's',
     left: 'a',
     right: 'd',
+    sprint: 'shift',
+    flashlightSwitch: 'f',
   }
 
-  const keys = [];
-  keys[ keysBindings.sprint ] = false;
+  const keys = {};
   keys[ keysBindings.up ] = false;
   keys[ keysBindings.down ] = false;
   keys[ keysBindings.left ] = false;
   keys[ keysBindings.right ] = false;
+  keys[ keysBindings.sprint ] = false;
+  keys[ keysBindings.flashlightSwitch ] = false;
 
   function onKeyDown({ key }) {
     keys[ key.toLowerCase() ] = true;
@@ -232,7 +234,7 @@ window.addEventListener("load", function() {
     
     // Flashlight switch
     if (flashlightSwitchCooldown === 1) {
-      if (keys[ 'f' ] && flashlightJuice > 0) {
+      if (keys[ keysBindings.flashlightSwitch ] && flashlightJuice > 0) {
         isFlashlightOn = !isFlashlightOn;
         flashlightSwitchCooldown = 0;
 
@@ -244,35 +246,32 @@ window.addEventListener("load", function() {
     }
     
     // Sprint switch
-    isSprintOn = keys[ 'shift' ];
+    isSprintOn = keys[ keysBindings.sprint ];
     player.stamina = clamp(isSprintOn
       ? player.stamina - timeDelta / 10
       : player.stamina + timeDelta / 10);
     if (player.stamina === 0) isSprintOn = false;
-    const deltaSpeed = isSprintOn
-      ? sprintSpeed * timeDelta
-      : speed * timeDelta;
-
+    
     // Movement
-    if( keys[ 'd' ] ) {
-      velocity.x = deltaSpeed;
+    const currentSpeed = isSprintOn ? sprintSpeed : speed;
+    if( keys[ keysBindings.right ] ) {
+      velocity.x = currentSpeed;
     }
-    else if( keys[ 'a' ] ) {
-      velocity.x = -deltaSpeed;
+    else if( keys[ keysBindings.left ] ) {
+      velocity.x = -currentSpeed;
     }
     
-    if( keys[ 'w' ] ) {
-      velocity.y = -deltaSpeed;
+    if( keys[ keysBindings.up ] ) {
+      velocity.y = -currentSpeed;
     }
-    else if( keys[ 's' ] ) {
-      velocity.y = deltaSpeed;
+    else if( keys[ keysBindings.down ] ) {
+      velocity.y = currentSpeed;
     }
 
-    const footstepsMod = mapValueInRangeClamped(velocity.getLength(), 0, .3, 0, isSprintOn ? 1.8 : 0.9);
-    footstepsSound.volume(footstepsMod);
-    footstepsSound.rate(footstepsMod);
+    let hasVelocityX = velocity.x !== 0;
+    let hasVelocityY = velocity.y !== 0;
 
-    let isOnTheMove = velocity.x !== 0 || velocity.y !== 0;
+    let isOnTheMove = hasVelocityX || hasVelocityY;
 
     // start movement event
     if (isOnTheMove && !wasOnTheMove) {
@@ -284,15 +283,22 @@ window.addEventListener("load", function() {
     }
 
     wasOnTheMove = isOnTheMove;
-    
-    if (velocity.x !== 0) player.x += velocity.x;
-    if (velocity.y !== 0) player.y += velocity.y;
+
+    if (isOnTheMove) {
+      const velocityLength = velocity.getLength();
+      if (hasVelocityX) player.x += (velocity.x / velocityLength) * Math.abs(velocity.x);
+      if (hasVelocityY) player.y += (velocity.y / velocityLength) * Math.abs(velocity.y);
+    }
     
     velocity.x *= friction;
     if (velocity.x < 0.01) velocity.x = 0;
     velocity.y *= friction;
     if (velocity.y < 0.01) velocity.y = 0;
-    
+
+    const footstepsMod = isSprintOn ? 1.8 : 0.9;
+    footstepsSound.volume(footstepsMod);
+    footstepsSound.rate(footstepsMod);
+
     // COLLISIONS
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
