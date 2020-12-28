@@ -6,6 +6,8 @@ const aim = new Image();
 aim.src = 'images/aim.png';
 const iconFlashlight = new Image();
 iconFlashlight.src = 'images/icon-flashlight.png';
+const iconHealth = new Image();
+iconHealth.src = 'images/icon-life-heart.png';
 
 const facilityAmbient = new Howl({
   src: ['sounds/sound-facility-ambient.mp3'],
@@ -37,7 +39,7 @@ const batteryDeadSound = new Howl({
 });
 
 window.addEventListener("load", function() {
-  
+
   const map = {
     // n tiles horizontally
     width: 8,
@@ -58,6 +60,8 @@ window.addEventListener("load", function() {
   let segments = [];
   let timeDelta = 0;
   let cursorSize = 24;
+  let UiPadding = 30;
+  let redOverlayOpacity = -1;
 
   // Flashlight
   let flashlightMaxIntensity = 1;
@@ -131,14 +135,19 @@ window.addEventListener("load", function() {
     map.tileWidth / 2,
     playerSize,
   );
+  
+  player.stamina = 1;
+  player.maxHealth = 5;
+  player.health = player.maxHealth;
 
   const monster = collisions.createCircle(
     map.tileWidth / 2,
     map.tileWidth / 4,
     15,
   );
-
-  player.stamina = 1;
+  monster.isMonster = true;
+  monsterAttackCooldown = 1;
+  monsterAttackCooldownCounter = monsterAttackCooldown;
 
   const velocity = new Vector();  
   const mouse = new Vector();
@@ -195,6 +204,7 @@ window.addEventListener("load", function() {
   window.addEventListener( 'keyup', onKeyUp );
 
   let lastUpdateTime = new Date().getTime();
+  ctx.scale(3,3);
   // let angle = 0;
   // const angleMax = Math.PI * 2;
   // const angleMaxFraction = angleMax / 10;
@@ -258,14 +268,14 @@ window.addEventListener("load", function() {
 
     let isOnTheMove = velocity.x !== 0 || velocity.y !== 0;
 
-    // // start movement event
-    // if (isOnTheMove && !wasOnTheMove) {
+    // start movement event
+    if (isOnTheMove && !wasOnTheMove) {
       
-    // }
-    // // stop movement event
-    // else if (!isOnTheMove && wasOnTheMove) {
+    }
+    // stop movement event
+    else if (!isOnTheMove && wasOnTheMove) {
       
-    // }
+    }
 
     wasOnTheMove = isOnTheMove;
     
@@ -289,8 +299,15 @@ window.addEventListener("load", function() {
 			if(player.collides(body, result)) {
 				player.x -= result.overlap * result.overlap_x;
 				player.y -= result.overlap * result.overlap_y;
-			}
+      }
+      if (body.isMonster && monsterAttackCooldownCounter >= monsterAttackCooldown) {
+        player.health = clamp(player.health - 1, 0, player.maxHealth);
+        monsterAttackCooldownCounter = 0;
+        if (player.health <= 0) redOverlayOpacity = 1
+        else redOverlayOpacity = 0.4;
+      }
     }
+    if (monsterAttackCooldownCounter < monsterAttackCooldown) monsterAttackCooldownCounter += timeDelta;
     
     // RENDERING
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -355,12 +372,19 @@ window.addEventListener("load", function() {
 
     // reset transform to draw UI elements in screen space
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    
+    // red overlay displayed when player is hurt
+    if (redOverlayOpacity > 0) {
+      ctx.fillStyle = `rgba(255, 50, 0, ${redOverlayOpacity})`;
+      ctx.beginPath();
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      redOverlayOpacity -= timeDelta;
+    }
 
     flashlightJuice = clamp(isFlashlightOn
       ? flashlightJuice - timeDelta / 40
       : flashlightJuice + timeDelta / 8);
-
-    ctx.globalCompositeOperation = 'source-over';
     
     // flashilight shape under flashlight power indicator
     ctx.globalAlpha = 0.25;
@@ -378,7 +402,7 @@ window.addEventListener("load", function() {
       iconFlashlight,
       0, 0,
       100 * flashlightJuice, 40,
-      30, canvas.height - 30 - 20,
+      UiPadding, canvas.height - UiPadding - 20,
       50 * flashlightJuice, 20,
     );
 
@@ -387,7 +411,7 @@ window.addEventListener("load", function() {
       ctx.beginPath();
       ctx.fillRect(
         canvasWidthHalf - 70 * player.stamina,
-        canvas.height - 50,
+        canvas.height - UiPadding - 5,
         140 * player.stamina, 5);
     }
 
@@ -398,8 +422,25 @@ window.addEventListener("load", function() {
       cursorSize,
       cursorSize,
     );
+      
+    for ( let i = 1; i < player.health + 1; i++ ) {
+      ctx.drawImage(
+        iconHealth,
+        canvas.width - UiPadding - ((iconHealth.width + 10) * i),
+        canvas.height - UiPadding - iconHealth.height,
+        iconHealth.width,
+        iconHealth.height,
+      );  
+    }
     
-    requestAnimationFrame(frame);
+    if (player.health > 0) {
+      requestAnimationFrame(frame);
+    }
+    else {
+      ctx.fillStyle = `rgba(255, 50, 0, 1)`;
+      ctx.beginPath();
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
   }
   
   frame();
