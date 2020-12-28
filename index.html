@@ -8,29 +8,71 @@
 
     <style>
       html, body, canvas {
+        background-color: #000;
+        border: 0;
         display: block;
+        font-size: 100%;
+        font: inherit;
+        left: 0;
+        line-height: 1;
         margin: 0;
         padding: 0;
         position: fixed;
         top: 0;
-        left: 0;
-        border: 0;
-        font-size: 100%;
-        font: inherit;
         vertical-align: baseline;
-        line-height: 1;
-        background-color: #000;
         z-index: 1;
       }
       
       canvas {
         cursor: none;
       }
+
+      .you-died {
+        align-items: center;
+        background-color: #ff2000;
+        display: none;
+        height: 100%;
+        position: fixed;
+        width: 100%;
+        z-index: 10;
+      }
+
+      .you-died div {
+        color: #131313;
+        font-size: 80px;
+        text-align: center;
+        width: 100%;
+        z-index: 10;
+      }
+
+      .you-died button {
+        background-color: transparent;
+        border: 1px solid #131313;
+        display: block;
+        font-size: 20px;
+        margin: 20px auto 0 auto;
+        padding: 8px 21px;
+        -webkit-transition: background-color 0.3s ease, color 0.3s ease;
+        -ms-transition: background-color 0.3s ease, color 0.3s ease;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .you-died button:hover {
+        background-color: #131313;
+        color: #ff2000;
+        cursor: pointer;
+      }
     </style>
   </head>
 
   <body>
     <canvas id="canvas"></canvas>
+    <div class="you-died">
+      <div>
+        You Died
+        <button type="button" class="restart-button">restart</button>
+      </div>
+    </div>
 
     <script src="js/lib/howler.js"></script>
 

@@ -40,6 +40,12 @@ const batteryDeadSound = new Howl({
 
 window.addEventListener("load", function() {
 
+  const youDiedScreen = document.querySelector('.you-died');
+  const restartButton = document.querySelector('.you-died .restart-button');
+  restartButton.addEventListener('click', () => {
+    window.location.reload();
+  });
+
   const map = {
     // n tiles horizontally
     width: 8,
@@ -437,9 +443,8 @@ window.addEventListener("load", function() {
       requestAnimationFrame(frame);
     }
     else {
-      ctx.fillStyle = `rgba(255, 50, 0, 1)`;
-      ctx.beginPath();
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      youDiedScreen.style.display = 'flex';
+      canvas.style.display = 'none';
     }
   }
   
