@@ -252,20 +252,20 @@ window.addEventListener("load", function() {
       velocity.y = deltaSpeed;
     }
 
-    const footstepsMod = mapValueInRangeClamped(velocity.getLength(), 0, .3, 0, isSprintOn ? 1.4 : 0.9);
+    const footstepsMod = mapValueInRangeClamped(velocity.getLength(), 0, .3, 0, isSprintOn ? 1.8 : 0.9);
     footstepsSound.volume(footstepsMod);
     footstepsSound.rate(footstepsMod);
 
     let isOnTheMove = velocity.x !== 0 || velocity.y !== 0;
 
-    // start movement event
-    if (isOnTheMove && !wasOnTheMove) {
+    // // start movement event
+    // if (isOnTheMove && !wasOnTheMove) {
       
-    }
-    // stop movement event
-    else if (!isOnTheMove && wasOnTheMove) {
+    // }
+    // // stop movement event
+    // else if (!isOnTheMove && wasOnTheMove) {
       
-    }
+    // }
 
     wasOnTheMove = isOnTheMove;
     
@@ -298,14 +298,6 @@ window.addEventListener("load", function() {
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
 
-    // ctx.globalCompositeOperation = 'source-over';
-    // // monster.x += canvasWidthHalf;
-    // // monster.y += canvasHeightHalf;
-    // ctx.beginPath();
-    // ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-    // monster.draw(ctx);
-    // ctx.fill();
-
     if (flashlightJuice === 0) {
       isFlashlightOn = false;
       batteryDeadSound.play();
@@ -313,6 +305,11 @@ window.addEventListener("load", function() {
 
     if (isFlashlightOn) {
       ctx.drawImage( floor, 0, 0, floor.width, floor.height);
+
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+      monster.draw(ctx);
+      ctx.fill();
         
       ctx.globalCompositeOperation = 'destination-in';
       
@@ -356,8 +353,7 @@ window.addEventListener("load", function() {
       
     }
 
-    
-
+    // reset transform to draw UI elements in screen space
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     flashlightJuice = clamp(isFlashlightOn
