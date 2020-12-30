@@ -1,104 +1,59 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
+  	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width">
+		<title>FOV 2D</title>
+		<style>
+			html, body, canvas {
+				border: 0;
+				cursor: none;
+				font-size: 100%;
+				font: inherit;
+				height: 100%;
+				line-height: 1;
+				margin: 0;
+				padding: 0;
+				vertical-align: baseline;
+				width: 100%;
+			}
+			canvas {
+				background-color: #000;
+				display: block;
+			}
+		</style>
+	</head>
 
-    <title>Maze Randomizer</title>
+	<body>
+		<script src="js/lib/pixi.js"></script>
 
-    <style>
-      html, body, canvas {
-        background-color: #000;
-        border: 0;
-        display: block;
-        font-size: 100%;
-        font: inherit;
-        left: 0;
-        line-height: 1;
-        margin: 0;
-        padding: 0;
-        position: fixed;
-        top: 0;
-        vertical-align: baseline;
-        z-index: 1;
-      }
-      
-      canvas {
-        cursor: none;
-      }
+		<script src="js/collisions/BVHBranch.js"></script>
+		<script src="js/collisions/BVH.js"></script>
+		<script src="js/collisions/result.js"></script>
+		<script src="js/collisions/SAT.js"></script>
+		<script src="js/collisions/body.js"></script>
+		<script src="js/collisions/circle.js"></script>
+		<script src="js/collisions/polygon.js"></script>
+		<script src="js/collisions/point.js"></script>
+		<script src="js/collisions/collisions.js"></script>
+		
+		<script src="js/utils/Utils.js"></script>
+		<script src="js/utils/GetRaySegmentIntersection.js"></script>
+		<script src="js/utils/GetFOVpolygon.js"></script>
 
-      .you-died {
-        align-items: center;
-        background-color: #ff2000;
-        display: none;
-        height: 100%;
-        position: fixed;
-        width: 100%;
-        z-index: 10;
-      }
+		<script src="js/Engine.js"></script>
+		<script src="js/Assets.js"></script>
+		<script src="js/SetupPixi.js"></script>
+		<script src="js/Vector.js"></script>
+		<script src="js/Flashlight.js"></script>
+		<script src="js/Player.js"></script>
+		<script src="js/Map.js"></script>
+		<script src="js/Mouse.js"></script>
+		<script src="js/Keys.js"></script>
+		<script src="js/Run.js"></script>
 
-      .you-died div {
-        color: #131313;
-        font-size: 80px;
-        text-align: center;
-        width: 100%;
-        z-index: 10;
-      }
-
-      .you-died button {
-        background-color: transparent;
-        border: 1px solid #131313;
-        display: block;
-        font-size: 20px;
-        margin: 20px auto 0 auto;
-        padding: 8px 21px;
-        -webkit-transition: background-color 0.3s ease, color 0.3s ease;
-        -ms-transition: background-color 0.3s ease, color 0.3s ease;
-        transition: background-color 0.3s ease, color 0.3s ease;
-      }
-
-      .you-died button:hover {
-        background-color: #131313;
-        color: #ff2000;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-
-  <body>
-    <canvas id="canvas"></canvas>
-    <div class="you-died">
-      <div>
-        You Died
-        <button type="button" class="restart-button">restart</button>
-      </div>
-    </div>
-
-    <script src="js/lib/howler.js"></script>
-
-    <script src="js/requestAnimationFrame.js"></script>
-    <script src="js/canvas.js"></script>
-    <script src="js/draw.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/vector.js"></script>
-    
-    <script src="js/collisions/BVHBranch.js"></script>
-    <script src="js/collisions/BVH.js"></script>
-    <script src="js/collisions/result.js"></script>
-    <script src="js/collisions/SAT.js"></script>
-    <script src="js/collisions/body.js"></script>
-    <script src="js/collisions/circle.js"></script>
-    <script src="js/collisions/polygon.js"></script>
-    <script src="js/collisions/point.js"></script>
-    <script src="js/collisions/collisions.js"></script>
-    
-    <script src="js/maze/wall.js"></script>
-    <script src="js/maze/cell.js"></script>
-    <script src="js/maze/generateMazeWalls.js"></script>
-    
-    <script src="js/sightAndLight/getIntersection.js"></script>
-    <script src="js/sightAndLight/getSightPolygon.js"></script>
-
-    <script src="index.js"></script>
-  </body>
+		<script>
+			window.addEventListener( 'load', Engine.Run );
+		</script>
+	</body>
 </html>

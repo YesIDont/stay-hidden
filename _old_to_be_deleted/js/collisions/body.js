@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * The base class for bodies used to detect collisions
  * @class

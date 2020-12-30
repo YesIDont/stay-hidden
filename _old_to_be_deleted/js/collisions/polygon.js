@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * A polygon used to detect collisions
  * @class
@@ -74,9 +72,6 @@ class Polygon extends Body {
 		this._coords = null;
 
 		/** @private */
-		this._segments = [];
-
-		/** @private */
 		this._edges = null;
 
 		/** @private */
@@ -89,70 +84,6 @@ class Polygon extends Body {
 		this._dirty_normals = true;
 
 		Polygon.prototype.setPoints.call(this, points);
-	}
-
-	getCoords() {
-		if(
-			this._dirty_coords ||
-			this.x       !== this._x ||
-			this.y       !== this._y ||
-			this.angle   !== this._angle ||
-			this.scale_x !== this._scale_x ||
-			this.scale_y !== this._scale_y
-		) {
-			this._calculateCoords();
-		}
-
-		return this._coords;
-	}
-
-	getPoints() {
-		const coords = this.getCoords();
-		const points = [];
-
-		points.push([ coords[0], coords[1] ]);
-
-		for(let i = 2; i < coords.length; i += 2) {
-			points.push([ coords[i], coords[i + 1] ]);
-		}
-
-		if(coords.length > 4) {
-			points.push([ coords[0], coords[1] ]);
-		}
-
-		return points;
-	}
-	
-	calculateSegments() {
-		const coords = this.getCoords();
-		const points = [];
-
-		points.push([ coords[0], coords[1] ]);
-
-		for(let i = 2; i < coords.length; i += 2) {
-			points.push([ coords[i], coords[i + 1] ]);
-		}
-
-		if(coords.length > 4) {
-			points.push([ coords[0], coords[1] ]);
-		}
-
-		for(let i = 1; i < points.length; i++) {
-			this._segments.push([
-				points[i - 1], points[i]
-			]);
-		}
-		this._segments.push([
-			points[points.length - 1], points[0]
-		]);
-	}
-
-	getSegments() {
-		if (this._segments.length === 0) {
-			this.calculateSegments();
-		}
-
-		return this._segments;
 	}
 
 	/**

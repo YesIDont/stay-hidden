@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * Determines if two bodies are colliding using the Separating Axis Theorem
  * @private

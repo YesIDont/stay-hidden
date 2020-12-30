@@ -1,5 +1,5 @@
 const draw = {
-    segment: function({ a, b }, color) {
+    segment: function( a, b, color) {
         ctx.strokeStyle = color || '#fff';
         ctx.beginPath();
         ctx.moveTo( a.x, a.y );

@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * A collision system used to track bodies in order to improve collision detection performance
  * @class

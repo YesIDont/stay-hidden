@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * A circle used to detect collisions
  * @class

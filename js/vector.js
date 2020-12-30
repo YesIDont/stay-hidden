@@ -1,19 +1,18 @@
-const Vector = function(x = 0, y = 0) {
-    this.x = x;
-    this.y = y;
+"use strict";
 
-    return this;
-}
+(function() {
 
-Vector.prototype.getLength = function() {
-    return Math.sqrt((this.x * this.x + this.y * this.y));
-}
+    const Vector = function(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
 
-Vector.prototype.normalize = function() {
-    const length = this.getLength();
+        return this;
+    }
 
-    this.x /= length;
-    this.y /= length;
+    Vector.prototype.getLength = function() {
+        return Math.sqrt((this.x * this.x + this.y * this.y));
+    }
 
-    return this;
-}
+    Engine.Vector = Vector;
+
+})();

@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * An object used to collect the detailed results of a collision test
  *

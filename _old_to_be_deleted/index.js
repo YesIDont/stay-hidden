@@ -52,7 +52,7 @@ window.addEventListener("load", function() {
     // n tiles vertically
     height: 8,
     // tiles are squares that are base for maze generation algorythm
-    tileWidth: 160,
+    tileWidth: 256,
     wallsThickness: 16,
   }
   
@@ -80,8 +80,8 @@ window.addEventListener("load", function() {
   let flashlightSwitchCooldown = 1;
   
   // Movement
-  let speed = 1.2;
-  let sprintSpeed = 4;
+  let speed = 12;
+  let sprintSpeed = 40;
   let isSprintOn = false;
   let wasOnTheMove = false;
 
@@ -135,7 +135,7 @@ window.addEventListener("load", function() {
       }
     });
   });
-  
+
   const player = collisions.createCircle(
     map.tileWidth / 2,
     map.tileWidth / 2,
@@ -177,10 +177,17 @@ window.addEventListener("load", function() {
   };
   document.addEventListener( 'mousemove', getMousePosition );
   
-  function getPlayerToPointAngle() {
+  function getPlayerToMouseAngle() {
     const angle = Math.atan2( canvasHeightHalf - mouse.y, canvasWidthHalf - mouse.x );
+
     return angle - (Math.PI * 0.5);
-    // return Math.atan2( point.y - mouse.y, point.x - mouse.x );
+  }
+
+  function convertScreenToMapCoordinates( point ) {
+    return {
+      x: -canvasWidthHalf + point.x + player.x,
+      y: -canvasHeightHalf + point.y + player.y,
+    };
   }
 
   const keysBindings = {
@@ -212,7 +219,7 @@ window.addEventListener("load", function() {
   window.addEventListener( 'keyup', onKeyUp );
 
   let lastUpdateTime = new Date().getTime();
-  ctx.scale(3,3);
+  // ctx.scale(3,3);
   // let angle = 0;
   // const angleMax = Math.PI * 2;
   // const angleMaxFraction = angleMax / 10;
@@ -223,12 +230,15 @@ window.addEventListener("load", function() {
     timeDelta = (currentTime - lastUpdateTime) / 1000;
     lastUpdateTime = currentTime;
     
-    const { x, y } = player;
     
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(canvasWidthHalf - x, canvasHeightHalf - y);
+    const canvasOffsetX = canvasWidthHalf - player.x;
+    const canvasOffsetY = canvasHeightHalf - player.y;
+    ctx.translate(canvasOffsetX, canvasOffsetY);
     
+    const { x, y } = player;
+    const mouseOnMap = convertScreenToMapCoordinates(mouse);
     // INPUT
     //////////////////////////////////////////////////////////////////////////////////////////////////
     
@@ -254,6 +264,7 @@ window.addEventListener("load", function() {
     
     // Movement
     const currentSpeed = isSprintOn ? sprintSpeed : speed;
+    currentSpeed *= timeDelta;
     if( keys[ keysBindings.right ] ) {
       velocity.x = currentSpeed;
     }
@@ -291,9 +302,9 @@ window.addEventListener("load", function() {
     }
     
     velocity.x *= friction;
-    if (velocity.x < 0.01) velocity.x = 0;
-    velocity.y *= friction;
-    if (velocity.y < 0.01) velocity.y = 0;
+		if (velocity.x < 0.01 && velocity.x > -0.01) velocity.x = 0;
+		velocity.y *= friction;
+		if (velocity.y < 0.01 && velocity.y > -0.01) velocity.y = 0;
 
     const footstepsMod = isSprintOn ? 1.8 : 0.9;
     footstepsSound.volume(footstepsMod);
@@ -327,23 +338,31 @@ window.addEventListener("load", function() {
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
 
+      // ctx.beginPath();
+      // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+      // player.draw(ctx);
+      // ctx.fill();
+
     if (flashlightJuice === 0) {
       isFlashlightOn = false;
       batteryDeadSound.play();
     };
 
     if (isFlashlightOn) {
-      ctx.drawImage( floor, 0, 0, floor.width, floor.height);
+      const FOVpoly = getSightPolygon(mouseOnMap, player, segments, uniquePoints, getPlayerToMouseAngle(), flashlight.height);
+      if ( FOVpoly.length > 0 ) draw.polygon( FOVpoly, "#fff" );
 
       ctx.beginPath();
       ctx.fillStyle = 'rgba(255, 0, 0, 1)';
       monster.draw(ctx);
       ctx.fill();
+
+      ctx.globalCompositeOperation = 'source-in';
+      ctx.drawImage( floor, 0, 0, floor.width, floor.height );
         
       ctx.globalCompositeOperation = 'destination-in';
       
-      const FOVpoly = getSightPolygon(x, y, segments, uniquePoints);
-      draw.polygon( FOVpoly, "#000" );
+      
       // get field of view polygon
       // const cornerPolys = []
       // for( angle = 0; angle < angleMax; angle += angleMaxFraction ) {
@@ -357,7 +376,7 @@ window.addEventListener("load", function() {
       // }
 
       ctx.translate(x, y);
-      ctx.rotate(getPlayerToPointAngle());
+      ctx.rotate(getPlayerToMouseAngle());
       ctx.translate(-x, -y);
 
       if (flashlightFlickerCounter < flashlightNextFlickerIn && flashlightIntensity === flashlightMaxIntensity) {
@@ -379,7 +398,6 @@ window.addEventListener("load", function() {
         flashlight.height,
       );
       ctx.globalAlpha = 1;
-      
     }
 
     // reset transform to draw UI elements in screen space
@@ -427,14 +445,6 @@ window.addEventListener("load", function() {
         140 * player.stamina, 5);
     }
 
-    ctx.drawImage(
-      aim,
-      mouse.x - cursorSize * 0.5,
-      mouse.y - cursorSize * 0.5,
-      cursorSize,
-      cursorSize,
-    );
-      
     for ( let i = 1; i < player.health + 1; i++ ) {
       ctx.drawImage(
         iconHealth,
@@ -444,6 +454,14 @@ window.addEventListener("load", function() {
         iconHealth.height,
       );  
     }
+
+    ctx.drawImage(
+      aim,
+      mouse.x - cursorSize * 0.5,
+      mouse.y - cursorSize * 0.5,
+      cursorSize,
+      cursorSize,
+    );
     
     if (player.health > 0) {
       requestAnimationFrame(frame);
