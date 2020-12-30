@@ -2,8 +2,6 @@
 # Project Ignores                       #
 #---------------------------------------#
 
-/assets
-
 # output
 /.temp
 /.tmp
