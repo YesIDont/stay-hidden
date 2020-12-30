@@ -30,7 +30,7 @@
             path: 'assets/images/flashlight.png',
             props: [
                 { name: 'anchor', value: [0.5, 1] },
-                { name: 'width', value: 1200 },
+                { name: 'width', value: 900 },
                 { name: 'height', value: 500 },
             ]
         },
@@ -47,7 +47,11 @@
         },
         {
             name: 'iconFlashlightSprite',
-            path: 'assets/images/icon-flashlight.png'
+            path: 'assets/images/icon-flashlight.png',
+            props: [
+                { name: 'width', value: 50 },
+                { name: 'height', value: 20 },
+            ]
         },
         {
             name: 'iconHealthSprite',

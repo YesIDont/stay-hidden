@@ -35,6 +35,9 @@
 		const PlayerVisibleAreaMask = new Pixi.Graphics();
 		Stage.addChild( PlayerVisibleAreaMask );
 		
+		const FlashlightIconMask = new Pixi.Graphics();
+		Stage.addChild( FlashlightIconMask );
+		
 		const PlayerSightStage = new Container();
 		Stage.addChild( PlayerSightStage );
 		PlayerSightStage.zIndex = 10;
@@ -59,6 +62,7 @@
 		
 		return {
 			Draw,
+			FlashlightIconMask,
 			Graphics,
 			Loader,
 			Pixi,

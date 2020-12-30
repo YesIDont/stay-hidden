@@ -3,13 +3,30 @@
 Engine.Run = function() {
 
 	const { Assets, ECollisions, Flashlight, Keys, KeysBindings, Mouse, Player, Result } = Engine;
-	const { Draw, Graphics, Loader, Screen, PlayerSightStage, PlayerVisibleAreaMask, UIStage } = Engine.SetupPixiJS();
+	const {
+		Draw,
+		FlashlightIconMask,
+		Graphics,
+		Loader,
+		Screen,
+		PlayerSightStage,
+		PlayerVisibleAreaMask,
+		UIStage
+	} = Engine.SetupPixiJS();
 	const player = new Player(Screen.width / 2, Screen.height / 2, 10, 120, 500);
 	const flashlight = new Flashlight();
+	const UiPadding = 30;
+	
+	PlayerVisibleAreaMask.lineStyle(0);
 
 	function AssetsPostLoadActions( loader, resources ) {
 		
-		const { aimSightSprite, floorSprite, flashlightSprite } = Assets.GetSprites( resources );
+		const {
+			aimSightSprite,
+			floorSprite,
+			flashlightSprite,
+			iconFlashlightSprite,
+		} = Assets.GetSprites( resources );
 
 		Mouse.attach( aimSightSprite );
 
@@ -18,6 +35,10 @@ Engine.Run = function() {
 		flashlightSprite.height = player.sightMaxDistance;
 
 		floorSprite.mask = flashlightSprite;
+		
+		iconFlashlightSprite.x = UiPadding;
+		iconFlashlightSprite.y = Screen.height - UiPadding - iconFlashlightSprite.height;
+		iconFlashlightSprite.mask = FlashlightIconMask;
 
 		PlayerSightStage.addChild
 		(
@@ -25,7 +46,11 @@ Engine.Run = function() {
 			flashlightSprite,
 		);
 		
-		UIStage.addChild( aimSightSprite );
+		UIStage.addChild
+		(
+			iconFlashlightSprite,
+			aimSightSprite,
+		);
 
 		function makeShape(segments, tags = [], color = '#777') {
 			const points = segments.map(({ a }) => {
@@ -115,7 +140,7 @@ Engine.Run = function() {
 			if (velocity.y < 0.01 && velocity.y > -0.01) velocity.y = 0;
 
 
-			// COLLISIONS
+			// SOLVE COLLISIONS
 			//////////////////////////////////////////////////////////////////////
 
 			ECollisions.update();
@@ -156,9 +181,19 @@ Engine.Run = function() {
 			// strokeSegment(Draw, player, FOVbounds.right, 'rgba(0, 255, 0, 0.7)');
 
 
-			// DRAW
+			// STATE UDPATES
 			//////////////////////////////////////////////////////////////////////
 
+			flashlight.juice = clamp(flashlightSprite.visible
+				? flashlight.juice - timeDelta / 40
+				: flashlight.juice + timeDelta / 8);
+				
+			if (flashlight.juice === 0) {
+				flashlightSprite.visible = false;
+				flashlight.switchCooldown = 0;
+				// batteryDeadSound.play();
+			};
+				
 			flashlightSprite.rotation = Mouse.getMouseToPointAngle( player );
 
 			if (flashlightSprite.visible)
@@ -175,28 +210,69 @@ Engine.Run = function() {
 
 				flashlightSprite.alpha = flashlight.intensity;
 			}
+			
+
+			// DRAW
+			//////////////////////////////////////////////////////////////////////
 
 			Draw.clear();
 			PlayerVisibleAreaMask.clear();
+			FlashlightIconMask.clear();
 			Draw.lineStyle(0);
-
-			const FOVpoly = GetFOVpolygon(player, obstaclesWithinSight);
-			if (FOVpoly.length > 0)
+			
+			// Draw mask of the area that's visible for the player
+			if (flashlightSprite.visible)
 			{
-				PlayerVisibleAreaMask.lineStyle(0);
-				PlayerVisibleAreaMask.beginFill( 0xFFFFFF );
-				PlayerVisibleAreaMask.moveTo(FOVpoly[0].x, FOVpoly[0].y);
-				for ( let i = 1; i < FOVpoly.length; i++ )
+				const FOVpoly = GetFOVpolygon(player, obstaclesWithinSight);
+				if (FOVpoly.length > 0)
 				{
-					PlayerVisibleAreaMask.lineTo(FOVpoly[i].x, FOVpoly[i].y);
-				}
-				PlayerVisibleAreaMask.lineTo(FOVpoly[0].x, FOVpoly[0].y);
-				PlayerVisibleAreaMask.endFill();
+					PlayerVisibleAreaMask.beginFill( 0xFFFFFF );
+					PlayerVisibleAreaMask.moveTo(FOVpoly[0].x, FOVpoly[0].y);
+					for ( let i = 1; i < FOVpoly.length; i++ )
+					{
+						PlayerVisibleAreaMask.lineTo(FOVpoly[i].x, FOVpoly[i].y);
+					}
+					PlayerVisibleAreaMask.lineTo(FOVpoly[0].x, FOVpoly[0].y);
+					PlayerVisibleAreaMask.endFill();
+				}				
 			}
-
-
+	
+			
 			// UI
 			//////////////////////////////////////////////////////////////////////
+			
+			// Draw flashlight mask that covers portion of flishlight icon
+			// to indicate battery consumption
+			// TODO : use PIXI's rectangle draw method
+			FlashlightIconMask.beginFill( 0xFFFFFF );
+			FlashlightIconMask.moveTo
+			(
+				iconFlashlightSprite.x,
+				iconFlashlightSprite.y,
+			);
+			FlashlightIconMask.lineTo
+			(
+				iconFlashlightSprite.x + iconFlashlightSprite.width * flashlight.juice,
+				iconFlashlightSprite.y,
+			);
+			FlashlightIconMask.lineTo
+			(
+				iconFlashlightSprite.x + iconFlashlightSprite.width * flashlight.juice,
+				iconFlashlightSprite.y + iconFlashlightSprite.height,
+			);
+			FlashlightIconMask.lineTo
+			(
+				iconFlashlightSprite.x,
+				iconFlashlightSprite.y + iconFlashlightSprite.height,
+			);
+			FlashlightIconMask.lineTo
+			(
+				iconFlashlightSprite.x,
+				iconFlashlightSprite.y,
+				);
+			FlashlightIconMask.endFill();
+			
+			// TODO : Draw translucent part of the flashlight icon
 
 
 			// DEBUG DRAW
