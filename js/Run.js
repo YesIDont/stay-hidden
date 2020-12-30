@@ -2,46 +2,30 @@
 
 Engine.Run = function() {
 
-	const { ECollisions, Flashlight, Keys, KeysBindings, Mouse, Player, Result } = Engine;
-	const { Draw, Graphics, Loader, Screen, Pixi, PlayerSightStage, PlayerVisibleAreaMask, Sprite, UIStage } = Engine.SetupPixiJS();
-	const player = new Player(Screen.width / 2, Screen.height / 2, 10, 120, 420);
+	const { Assets, ECollisions, Flashlight, Keys, KeysBindings, Mouse, Player, Result } = Engine;
+	const { Draw, Graphics, Loader, Screen, PlayerSightStage, PlayerVisibleAreaMask, UIStage } = Engine.SetupPixiJS();
+	const player = new Player(Screen.width / 2, Screen.height / 2, 10, 120, 500);
 	const flashlight = new Flashlight();
 
 	function AssetsPostLoadActions( loader, resources ) {
+		
+		const { aimSightSprite, floorSprite, flashlightSprite } = Assets.GetSprites( resources );
 
-		const AimSight = new Sprite( resources[ 'aimSight' ].texture );
-		AimSight.anchor.set(0.5);
-		AimSight.x = Mouse.x;
-		AimSight.y = Mouse.y;
-		AimSight.width = 24;
-		AimSight.height = 24;
-		UIStage.addChild( AimSight );
+		Mouse.attach( aimSightSprite );
 
-		const FlashlightImg = new Sprite( resources[ 'flashlight' ].texture );
-		FlashlightImg.anchor.set(0.5, 1);
-		FlashlightImg.x = player.x;
-		FlashlightImg.y = player.y;
-		FlashlightImg.width = 405;
-		FlashlightImg.height = 420;
+		flashlightSprite.x = player.x;
+		flashlightSprite.y = player.y;
+		flashlightSprite.height = player.sightMaxDistance;
 
-		const PersonalLight = new Sprite( resources[ 'personalLight' ].texture );
-		PersonalLight.anchor.set(0.5, 0.5);
-		PersonalLight.x = player.x;
-		PersonalLight.y = player.y;
-		PersonalLight.width = 300;
-		PersonalLight.height = 300;
-		PersonalLight.alpha = 0.5;
-		PersonalLight.blendMode = Pixi.BLEND_MODES.OVERLAY;
+		floorSprite.mask = flashlightSprite;
 
-		const FloorImg = new Sprite( resources[ 'floor' ].texture );
-		FloorImg.anchor.set(0);
-		FloorImg.x = 0;
-		FloorImg.y = 0;
-		FloorImg.width = 2000;
-		FloorImg.height = 2000;
-		FloorImg.mask = FlashlightImg;
-
-		PlayerSightStage.addChild( /* PersonalLight, */ FlashlightImg, FloorImg );
+		PlayerSightStage.addChild
+		(
+			floorSprite,
+			flashlightSprite,
+		);
+		
+		UIStage.addChild( aimSightSprite );
 
 		function makeShape(segments, tags = [], color = '#777') {
 			const points = segments.map(({ a }) => {
@@ -87,7 +71,7 @@ Engine.Run = function() {
 			// Flashlight switch
 			if (flashlight.switchCooldown === 1) {
 				if (Keys[ KeysBindings.flashlightSwitch ] && flashlight.juice > 0) {
-					FlashlightImg.visible = !FlashlightImg.visible;
+					flashlightSprite.visible = !flashlightSprite.visible;
 					flashlight.switchCooldown = 0;
 			
 					// lightSwitchSound.play();
@@ -117,14 +101,12 @@ Engine.Run = function() {
 			if (velocity.x !== 0) {
 				player.x += (velocity.x / velocityLength) * Math.abs(velocity.x) * timeDelta;
 				player.FOVarea.x = player.x;
-				FlashlightImg.x = player.x;
-				PersonalLight.x = player.x;
+				flashlightSprite.x = player.x;
 			};
 			if (velocity.y !== 0) {
 				player.y += (velocity.y / velocityLength) * Math.abs(velocity.y) * timeDelta;
 				player.FOVarea.y = player.y;
-				FlashlightImg.y = player.y;
-				PersonalLight.y = player.y;
+				flashlightSprite.y = player.y;
 			};
 
 			velocity.x *= friction;
@@ -177,9 +159,9 @@ Engine.Run = function() {
 			// DRAW
 			//////////////////////////////////////////////////////////////////////
 
-			FlashlightImg.rotation = Mouse.getMouseToPointAngle( player );
+			flashlightSprite.rotation = Mouse.getMouseToPointAngle( player );
 
-			if (FlashlightImg.visible)
+			if (flashlightSprite.visible)
 			{
 				if (flashlight.flickerCounter < flashlight.nextFlickerIn && flashlight.intensity === flashlight.maxIntensity) {
 					flashlight.flickerCounter += timeDelta;
@@ -191,7 +173,7 @@ Engine.Run = function() {
 					flashlight.flickerCounter = 0;
 				}
 
-				FlashlightImg.alpha = flashlight.intensity;
+				flashlightSprite.alpha = flashlight.intensity;
 			}
 
 			Draw.clear();
@@ -215,9 +197,6 @@ Engine.Run = function() {
 
 			// UI
 			//////////////////////////////////////////////////////////////////////
-
-			AimSight.x = Mouse.x;
-			AimSight.y = Mouse.y;
 
 
 			// DEBUG DRAW

@@ -34,7 +34,7 @@
 		// Masks
 		const PlayerVisibleAreaMask = new Pixi.Graphics();
 		Stage.addChild( PlayerVisibleAreaMask );
-	
+		
 		const PlayerSightStage = new Container();
 		Stage.addChild( PlayerSightStage );
 		PlayerSightStage.zIndex = 10;
