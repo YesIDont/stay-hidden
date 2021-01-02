@@ -80,8 +80,8 @@ window.addEventListener("load", function() {
   let flashlightSwitchCooldown = 1;
   
   // Movement
-  let speed = 12;
-  let sprintSpeed = 40;
+  let speed = 50;
+  let sprintSpeed = 100;
   let isSprintOn = false;
   let wasOnTheMove = false;
 
@@ -263,7 +263,7 @@ window.addEventListener("load", function() {
     if (player.stamina === 0) isSprintOn = false;
     
     // Movement
-    const currentSpeed = isSprintOn ? sprintSpeed : speed;
+    let currentSpeed = isSprintOn ? sprintSpeed : speed;
     currentSpeed *= timeDelta;
     if( keys[ keysBindings.right ] ) {
       velocity.x = currentSpeed;

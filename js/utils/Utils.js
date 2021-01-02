@@ -9,7 +9,15 @@ function clamp( value, min = 0, max = 1 )
     return value;
 }
 
-function randomInRange( min = 0, max = 1 ) {
+function mapValueInRangeClamped( value, in_min, in_max, out_min = 0, out_max = 1 )
+{
+    const inRange = (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+
+    return clamp(inRange, out_min, out_max);
+}
+
+function randomInRange( min = 0, max = 1 )
+{
     return Math.random() * (max - min) + min;
 }
 
@@ -32,7 +40,8 @@ function getRotatedVector(vector, angle, pivotPoint)
     }
 };
 
-function GetCanvasAspectRatio( context ) {
+function GetCanvasAspectRatio( context )
+{
     
     const devicePixelRatio = window.devicePixelRatio || 1;
     
@@ -47,7 +56,8 @@ function GetCanvasAspectRatio( context ) {
     return ratio;
 };
 
-function GetWindowInnerSize() {
+function GetWindowInnerSize()
+{
     return {
       width: window.innerWidth && document.documentElement.clientWidth
         ? Math.min( window.innerWidth, document.documentElement.clientWidth )
@@ -63,3 +73,38 @@ function GetWindowInnerSize() {
     }
 };
 
+function fillRectangle( pixiGraphics, x, y, width, height, color = 0x000000, alpha = 1 )
+{
+    if (width === 0 || height === 0) return;
+
+    pixiGraphics.beginFill( color, alpha );
+    pixiGraphics.moveTo( x, y );
+    pixiGraphics.lineTo( x + width, y );
+    pixiGraphics.lineTo( x + width, y + height);
+    pixiGraphics.lineTo( x, y + height);
+    pixiGraphics.lineTo( x, y );
+    pixiGraphics.endFill();
+}
+
+function strokePolygon( pixiGraphics, points, lineThickness = 1, color = 0x000000 )
+{
+    pixiGraphics.lineStyle( lineThickness, color );
+    pixiGraphics.moveTo(points[0][0], points[0][1]);
+    for ( let i = 1; i < points.length; i++ )
+    {
+        pixiGraphics.lineTo(points[i][0], points[i][1]);
+    }
+    pixiGraphics.lineTo(points[0][0], points[0][1]);
+}
+
+function fillPolygon( pixiGraphics, points, color = 0x000000, alpha = 1 )
+{
+    pixiGraphics.beginFill( color, alpha );
+    pixiGraphics.moveTo(points[0][0], points[0][1]);
+    for ( let i = 1; i < points.length; i++ )
+    {
+        pixiGraphics.lineTo(points[i][0], points[i][1]);
+    }
+    pixiGraphics.lineTo(points[0][0], points[0][1]);
+    pixiGraphics.endFill();
+}

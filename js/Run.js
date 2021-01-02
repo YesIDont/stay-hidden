@@ -3,19 +3,31 @@
 Engine.Run = function() {
 
 	const { Assets, ECollisions, Flashlight, Keys, KeysBindings, Mouse, Player, Result } = Engine;
+
 	const {
 		Draw,
 		FlashlightIconMask,
 		Graphics,
+		HealthMask,
+		HighlightsChangel,
 		Loader,
 		Screen,
 		PlayerSightStage,
+		PlayerVisibleAreaContainer,
 		PlayerVisibleAreaMask,
-		UIStage
+		UIStage,
 	} = Engine.SetupPixiJS();
-	const player = new Player(Screen.width / 2, Screen.height / 2, 10, 120, 500);
+
+	const player = new Player({
+		x: Screen.width / 2,
+		y: Screen.height / 2,
+		size: 10,
+		maxSpeed: 80,
+		sightMaxDistance: 400
+	});
 	const flashlight = new Flashlight();
 	const UiPadding = 30;
+	const FOVfuzzyRadius = 8;
 	
 	PlayerVisibleAreaMask.lineStyle(0);
 
@@ -25,7 +37,10 @@ Engine.Run = function() {
 			aimSightSprite,
 			floorSprite,
 			flashlightSprite,
-			iconFlashlightSprite,
+			iconFlashlightUsedRed,
+			iconFlashlight,
+			iconHealthLostRed,
+			iconHealth,
 		} = Assets.GetSprites( resources );
 
 		Mouse.attach( aimSightSprite );
@@ -34,25 +49,49 @@ Engine.Run = function() {
 		flashlightSprite.y = player.y;
 		flashlightSprite.height = player.sightMaxDistance;
 
-		floorSprite.mask = flashlightSprite;
 		
-		iconFlashlightSprite.x = UiPadding;
-		iconFlashlightSprite.y = Screen.height - UiPadding - iconFlashlightSprite.height;
-		iconFlashlightSprite.mask = FlashlightIconMask;
+		iconFlashlight.x = iconFlashlightUsedRed.x = UiPadding;
+		iconFlashlight.y = iconFlashlightUsedRed.y = Screen.height - UiPadding - iconFlashlight.height;
+		
+		iconHealth.x = iconHealthLostRed.x = Screen.width - iconHealth.width - UiPadding;
+		iconHealth.y = iconHealthLostRed.y = Screen.height - iconHealth.height - UiPadding;
+		iconHealth.mask = HealthMask;
+		
+		iconFlashlight.mask = FlashlightIconMask;
+		floorSprite.mask = flashlightSprite;
+		HighlightsChangel.mask = flashlightSprite;
+		PlayerSightStage.mask = PlayerVisibleAreaContainer;
+		
+		PlayerVisibleAreaContainer.addChild
+		(
+			PlayerVisibleAreaMask
+		);
 
 		PlayerSightStage.addChild
 		(
 			floorSprite,
 			flashlightSprite,
+			HighlightsChangel,
 		);
 		
 		UIStage.addChild
 		(
-			iconFlashlightSprite,
+			iconFlashlightUsedRed,
+			iconFlashlight,
+			iconHealthLostRed,
+			iconHealth,
 			aimSightSprite,
 		);
+		
+		const {
+			facilityAmbient,
+			footstepsSound,
+			lightSwitchSound,
+			batteryDeadSound,
+		} = Assets.GetSounds();
 
-		function makeShape(segments, tags = [], color = '#777') {
+		function makeShape(segments, tags = [], color = '#777')
+		{
 			const points = segments.map(({ a }) => {
 				return [a.x, a.y];
 			});
@@ -72,19 +111,23 @@ Engine.Run = function() {
 		});
 		
 		// add vewport borders to mapData
-		/* const mapBounds =  */makeShape([
-			{a:{x:0,y:0}, b:{x:Screen.width,y:0}},
-			{a:{x:Screen.width,y:0}, b:{x:Screen.width,y:Screen.height}},
-			{a:{x:Screen.width,y:Screen.height}, b:{x:0,y:Screen.height}},
-			{a:{x:0,y:Screen.height}, b:{x:0,y:0}},
-		], ['obstacle', 'bounds']);
+		makeShape
+		(
+			[
+				{a:{x:0,y:0}, b:{x:Screen.width,y:0}},
+				{a:{x:Screen.width,y:0}, b:{x:Screen.width,y:Screen.height}},
+				{a:{x:Screen.width,y:Screen.height}, b:{x:0,y:Screen.height}},
+				{a:{x:0,y:Screen.height}, b:{x:0,y:0}},
+			],
+			['obstacle', 'bounds']
+		);
 
 		let lastUpdateTime = new Date().getTime();
 		let potentials = null;
 
 		function GlobalUpdate() {
 
-			const { velocity, friction, halfFOV } = player;
+			const { velocity, friction } = player;
 			const currentTime = new Date().getTime();
 			const timeDelta = (currentTime - lastUpdateTime) / 1000;
 			lastUpdateTime = currentTime;
@@ -94,41 +137,59 @@ Engine.Run = function() {
 			//////////////////////////////////////////////////////////////////////
 
 			// Flashlight switch
-			if (flashlight.switchCooldown === 1) {
-				if (Keys[ KeysBindings.flashlightSwitch ] && flashlight.juice > 0) {
+			if (flashlight.switchCooldown === 1)
+			{
+				if (Keys[ KeysBindings.flashlightSwitch ] && flashlight.juice > 0)
+				{
 					flashlightSprite.visible = !flashlightSprite.visible;
 					flashlight.switchCooldown = 0;
 			
-					// lightSwitchSound.play();
+					lightSwitchSound.play();
 				}
 			}
 			else {
 				flashlight.switchCooldown = clamp(flashlight.switchCooldown + timeDelta * 3);
 			}
+			
+			// Sprint switch
+			player.isSprinting = Keys[ KeysBindings.sprint ];
+			player.stamina = clamp
+			(
+				player.isSprinting
+					? player.stamina - timeDelta / 10
+					: player.stamina + timeDelta / 10
+			);
+			if (player.stamina === 0) player.isSprinting = false;
 
-			const currentSpeed = player.maxSpeed;
+			const currentSpeed = player.isSprinting ? player.sprintSpeed : player.walkSpeed;
 			// solve player's velocity
-			if( Keys[ KeysBindings.right ] ) {
+			if (Keys[ KeysBindings.right ])
+			{
 				velocity.x = currentSpeed;
 			}
-			else if( Keys[ KeysBindings.left ] ) {
+			else if (Keys[ KeysBindings.left ])
+			{
 				velocity.x = -currentSpeed;
 			}
 			
-			if( Keys[ KeysBindings.up ] ) {
+			if (Keys[ KeysBindings.up ])
+			{
 				velocity.y = -currentSpeed;
 			}
-			else if( Keys[ KeysBindings.down ] ) {
+			else if (Keys[ KeysBindings.down ])
+			{
 				velocity.y = currentSpeed;
 			}
 
 			const velocityLength = velocity.getLength();
-			if (velocity.x !== 0) {
+			if (velocity.x !== 0)
+			{
 				player.x += (velocity.x / velocityLength) * Math.abs(velocity.x) * timeDelta;
 				player.FOVarea.x = player.x;
 				flashlightSprite.x = player.x;
 			};
-			if (velocity.y !== 0) {
+			if (velocity.y !== 0)
+			{
 				player.y += (velocity.y / velocityLength) * Math.abs(velocity.y) * timeDelta;
 				player.FOVarea.y = player.y;
 				flashlightSprite.y = player.y;
@@ -147,8 +208,10 @@ Engine.Run = function() {
 
 			// solve player's collisions
 			potentials = player.potentials();
-			for(const body of potentials) {
-				if(body.tags && body.tags.includes('obstacle') && !body.tags.includes('bounds') && player.collides(body, Result)) {
+			for (const body of potentials)
+			{
+				if(body.tags && body.tags.includes('obstacle') && !body.tags.includes('bounds') && player.collides(body, Result))
+				{
 					player.x -= Result.overlap * Result.overlap_x;
 					player.y -= Result.overlap * Result.overlap_y;
 				}
@@ -157,10 +220,12 @@ Engine.Run = function() {
 			// get obstacles that are overlaping with FOV area
 			potentials = player.FOVarea.potentials();
 			const obstaclesWithinSight = [];
-			Draw.strokeStyle = 'rgba(255, 0, 0, 0.2)';
-			for(const body of potentials) {
+			// Draw.strokeStyle = 'rgba(255, 0, 0, 0.2)';
+			for(const body of potentials)
+			{
 				const colorSave = body.color;
-				if(body.tags && body.tags.includes('obstacle') && player.FOVarea.collides(body, Result)) {
+				if(body.tags && body.tags.includes('obstacle') && player.FOVarea.collides(body, Result))
+				{
 					obstaclesWithinSight.push(body);
 				}
 			}
@@ -184,21 +249,26 @@ Engine.Run = function() {
 			// STATE UDPATES
 			//////////////////////////////////////////////////////////////////////
 
-			flashlight.juice = clamp(flashlightSprite.visible
-				? flashlight.juice - timeDelta / 40
-				: flashlight.juice + timeDelta / 8);
+			flashlight.juice = clamp
+			(
+				flashlightSprite.visible
+					? flashlight.juice - timeDelta / 40
+					: flashlight.juice + timeDelta / 8
+			);
 				
-			if (flashlight.juice === 0) {
+			if (flashlight.juice === 0)
+			{
 				flashlightSprite.visible = false;
 				flashlight.switchCooldown = 0;
-				// batteryDeadSound.play();
+				batteryDeadSound.play();
 			};
 				
 			flashlightSprite.rotation = Mouse.getMouseToPointAngle( player );
 
 			if (flashlightSprite.visible)
 			{
-				if (flashlight.flickerCounter < flashlight.nextFlickerIn && flashlight.intensity === flashlight.maxIntensity) {
+				if (flashlight.flickerCounter < flashlight.nextFlickerIn && flashlight.intensity === flashlight.maxIntensity)
+				{
 					flashlight.flickerCounter += timeDelta;
 				}
 				else {
@@ -211,29 +281,74 @@ Engine.Run = function() {
 				flashlightSprite.alpha = flashlight.intensity;
 			}
 			
+			footstepsSound.volume( mapValueInRangeClamped(velocityLength, 0, player.sprintSpeed ));
+			footstepsSound.rate( player.isSprinting ? 1.5 : 0.9 );
+			
 
 			// DRAW
 			//////////////////////////////////////////////////////////////////////
 
 			Draw.clear();
+			Draw.lineStyle(0);
 			PlayerVisibleAreaMask.clear();
 			FlashlightIconMask.clear();
-			Draw.lineStyle(0);
+			HighlightsChangel.clear();
 			
 			// Draw mask of the area that's visible for the player
 			if (flashlightSprite.visible)
 			{
-				const FOVpoly = GetFOVpolygon(player, obstaclesWithinSight);
+				const visiblePolygons = [];
+				const FOVpoly = GetFOVpolygon(player, obstaclesWithinSight, visiblePolygons);
 				if (FOVpoly.length > 0)
 				{
 					PlayerVisibleAreaMask.beginFill( 0xFFFFFF );
 					PlayerVisibleAreaMask.moveTo(FOVpoly[0].x, FOVpoly[0].y);
+					// HighlightsChangel.moveTo(FOVpoly[0].x, FOVpoly[0].y);
 					for ( let i = 1; i < FOVpoly.length; i++ )
 					{
 						PlayerVisibleAreaMask.lineTo(FOVpoly[i].x, FOVpoly[i].y);
-					}
+						// HighlightsChangel.lineTo(FOVpoly[i].x, FOVpoly[i].y);
+					};
 					PlayerVisibleAreaMask.lineTo(FOVpoly[0].x, FOVpoly[0].y);
+					// HighlightsChangel.lineTo(FOVpoly[0].x, FOVpoly[0].y);
 					PlayerVisibleAreaMask.endFill();
+					
+					visiblePolygons.forEach(polygon => {
+						strokePolygon(HighlightsChangel, polygon, 3, 0x888888);
+					});
+					
+					// const cornerPolys = [];
+					// for (let angle = 0; angle < Math.PI * 2; angle += Math.PI * 2 / 10)
+					// {
+					// 	const POVangled = {
+					// 		x: player.x + Math.cos(angle) * FOVfuzzyRadius,
+					// 		y: player.y + Math.sin(angle) * FOVfuzzyRadius,
+					// 	}
+					// 	const cornerPoly = GetFOVpolygon(POVangled, obstaclesWithinSight);
+					// 	if (cornerPoly.length > 0)
+					// 	{
+					// 		cornerPolys.push(cornerPoly);
+					// 	};
+					// };
+					// if (cornerPolys.length > 0)
+					// {
+					// 	cornerPolys.forEach(poly => {
+					// 		PlayerVisibleAreaMask.beginFill( 0xFFFFFF, 0.3 );
+					// 		PlayerVisibleAreaMask.moveTo(poly[0].x, poly[0].y);
+					// 		for ( let i = 1; i < poly.length; i++ )
+					// 		{
+					// 			PlayerVisibleAreaMask.lineTo(poly[i].x, poly[i].y);
+					// 		};
+					// 		PlayerVisibleAreaMask.lineTo(poly[0].x, poly[0].y);
+					// 		PlayerVisibleAreaMask.endFill();
+					// 	});
+					// }
+					// Debug draw: sight rays
+					// Draw.lineStyle( 1, 0xFF0000, 0.1);
+					// FOVpoly.forEach(point => {
+					// 	Draw.moveTo(point.x, point.y);
+					// 	Draw.lineTo(player.x, player.y);
+					// });
 				}				
 			}
 	
@@ -243,58 +358,50 @@ Engine.Run = function() {
 			
 			// Draw flashlight mask that covers portion of flishlight icon
 			// to indicate battery consumption
-			// TODO : use PIXI's rectangle draw method
-			FlashlightIconMask.beginFill( 0xFFFFFF );
-			FlashlightIconMask.moveTo
+			fillRectangle
 			(
-				iconFlashlightSprite.x,
-				iconFlashlightSprite.y,
+				FlashlightIconMask,
+				iconFlashlight.x,
+				iconFlashlight.y,
+				iconFlashlight.width * flashlight.juice,
+				iconFlashlight.height,
+				0xFFFFFF
 			);
-			FlashlightIconMask.lineTo
-			(
-				iconFlashlightSprite.x + iconFlashlightSprite.width * flashlight.juice,
-				iconFlashlightSprite.y,
-			);
-			FlashlightIconMask.lineTo
-			(
-				iconFlashlightSprite.x + iconFlashlightSprite.width * flashlight.juice,
-				iconFlashlightSprite.y + iconFlashlightSprite.height,
-			);
-			FlashlightIconMask.lineTo
-			(
-				iconFlashlightSprite.x,
-				iconFlashlightSprite.y + iconFlashlightSprite.height,
-			);
-			FlashlightIconMask.lineTo
-			(
-				iconFlashlightSprite.x,
-				iconFlashlightSprite.y,
-				);
-			FlashlightIconMask.endFill();
 			
-			// TODO : Draw translucent part of the flashlight icon
-
-
-			// DEBUG DRAW
+			// Draw mask to indicate lost health
+			const healthIconWidth = iconHealth.width;
+			const healthIconHeight = iconHealth.height;
+			const healthLostNormalized = mapValueInRangeClamped(player.maxHealth - player.currentHealth, 0, player.maxHealth);
+			fillRectangle
+			(
+				HealthMask,
+				iconHealth.x + healthIconWidth * healthLostNormalized,
+				iconHealth.y,
+				healthIconWidth - healthIconWidth * healthLostNormalized,
+				healthIconHeight,
+				0xFFFFFF
+			);
+			
+			// DRAW
 			//////////////////////////////////////////////////////////////////////
+			
+			if (player.stamina < 1)
+			{
+				fillRectangle
+				(
+					Draw,
+					Screen.width * 0.5 - (70  * player.stamina),
+					Screen.height - UiPadding - 5,
+					140 * player.stamina,
+					5,
+					0xFFFFFF
+				)
+			}
 
 			// draw all obstacles
-			// Draw.lineStyle( 2, 0x444444 );
 			// obstacles.forEach(obstacle => {
-			// 	const points = obstacle.getPoints();
-			// 	Draw.moveTo(points[0][0], points[0][1]);
-			// 	for ( let i = 1; i < points.length; i++ )
-			// 	{
-			// 		Draw.lineTo(points[i][0], points[i][1]);
-			// 	}
-			// 	Draw.lineTo(points[0][0], points[0][1]);
-			// });
-
-			// Draw rays
-			// Draw.lineStyle( 1, 0xFF0000, 0.2 );
-			// FOVpoly.forEach(point => {
-			// 	Draw.moveTo(point.x, point.y);
-			// 	Draw.lineTo(player.x, player.y);
+			// 	fillPolygon( Draw, obstacle.getPoints(), 0x000000 );
+			// 	strokePolygon( Draw, obstacle.getPoints(), 1, 0x222222 );					
 			// });
 
 			// Draw view area circle

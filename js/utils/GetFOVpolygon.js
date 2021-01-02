@@ -1,7 +1,7 @@
 "use strict";
 
-function GetFOVpolygon(pointOfView, obstaclesWithinSight) {
-
+function GetFOVpolygon(pointOfView, obstaclesWithinSight, outHitSegments)
+{
     const segments = [];
     const uniquePoints = [];
     obstaclesWithinSight.forEach(obstacle => {
@@ -27,7 +27,7 @@ function GetFOVpolygon(pointOfView, obstaclesWithinSight) {
 		let dx = Math.cos(angle);
 		let dy = Math.sin(angle);
 
-		// Ray from center of screen to pointOfView
+		// Ray from pointOfView of screen to direction set by angle
 		let ray = {
 			a: { x: pointOfView.x, y: pointOfView.y },
 			b: { x: pointOfView.x + dx, y: pointOfView.y + dy }
@@ -35,15 +35,19 @@ function GetFOVpolygon(pointOfView, obstaclesWithinSight) {
 
 		// Find CLOSEST intersection
 		let closestIntersect = null;
-		for( let i = 0; i < segments.length; i++ ) {
+		for (let i = 0; i < segments.length; i++)
+		{
 			let intersect = GetRaySegmentIntersection( ray, segments[i] );
-			if( intersect && ( !closestIntersect || intersect.param < closestIntersect.param )) {
+			if (intersect && (!closestIntersect || intersect.param < closestIntersect.param))
+			{
 				closestIntersect = intersect;
+				if (outHitSegments) outHitSegments.push( segments[i] );
 			}
 		}
 
 		// Intersect angle
-		if( closestIntersect ) {
+		if (closestIntersect)
+		{
 			closestIntersect.angle = angle;
 	
 			// Add to list of intersects

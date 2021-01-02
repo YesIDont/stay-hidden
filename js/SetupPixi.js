@@ -33,40 +33,55 @@
 
 		// Masks
 		const PlayerVisibleAreaMask = new Pixi.Graphics();
-		Stage.addChild( PlayerVisibleAreaMask );
-		
 		const FlashlightIconMask = new Pixi.Graphics();
-		Stage.addChild( FlashlightIconMask );
+		const HealthMask = new Pixi.Graphics();
+		
+		const BackgroundStage = new Container();
+		Stage.addChild( BackgroundStage );
+		BackgroundStage.zIndex = 1;
+		BackgroundStage.width = Screen.width;
+		BackgroundStage.height = Screen.height;
+		
+		const PlayerVisibleAreaContainer = new Container();
+		Stage.addChild( PlayerVisibleAreaContainer );
+		PlayerVisibleAreaContainer.zIndex = 1;
+		PlayerVisibleAreaContainer.width = Screen.width;
+		PlayerVisibleAreaContainer.height = Screen.height;
 		
 		const PlayerSightStage = new Container();
 		Stage.addChild( PlayerSightStage );
 		PlayerSightStage.zIndex = 10;
 		PlayerSightStage.width = Screen.width;
 		PlayerSightStage.height = Screen.height;
-		PlayerSightStage.mask = PlayerVisibleAreaMask;
 
 		const UIStage = new Container();
 		Stage.addChild( UIStage );
 		UIStage.zIndex = 20;
 		UIStage.width = Screen.width;
 		UIStage.height = Screen.height;
+
+		const HighlightsChangel = new Pixi.Graphics();
 	
-		Engine.Assets.Static.forEach( image => {
-			Loader.add( image.name, image.path );
+		Engine.Assets.Textures.forEach( textureName => {
+			Loader.add( textureName, `assets/images/${textureName}.png` );
 		});
 		
-		// Mostly for debug purposes
+		// General purposes draw
 		const Draw = new Pixi.Graphics();
 		Draw.zIndex = 100;
 		Stage.addChild( Draw );
 		
 		return {
+			BackgroundStage,
 			Draw,
 			FlashlightIconMask,
 			Graphics,
+			HealthMask,
+			HighlightsChangel,
 			Loader,
 			Pixi,
 			PlayerSightStage,
+			PlayerVisibleAreaContainer,
 			PlayerVisibleAreaMask,
 			Renderer,
 			Screen,

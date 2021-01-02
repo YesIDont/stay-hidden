@@ -7,6 +7,7 @@
         down: 's',
         left: 'a',
         right: 'd',
+        sprint: 'shift',
         flashlightSwitch: 'f',
     }
 
@@ -15,6 +16,7 @@
     Keys[ KeysBindings.down ] = false;
     Keys[ KeysBindings.left ] = false;
     Keys[ KeysBindings.right ] = false;
+    Keys[ KeysBindings.sprint ] = false;
     Keys[ KeysBindings.flashlightSwitch ] = false;
 
     function onKeyDown({ key }) {
