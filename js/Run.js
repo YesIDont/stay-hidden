@@ -14,15 +14,16 @@ Engine.Run = function() {
 		Screen,
 		LevelContainer,
 		PlayerVisibleAreaMask,
+		UIDraw,
 		UIStage,
 	} = Engine.SetupPixiJS();
-
+	
 	const player = new Player({
-		x: Screen.width / 2,
-		y: Screen.height / 2,
+		x: 50,
+		y: 50,
 		size: 10,
 		maxSpeed: 80,
-		sightMaxDistance: 400
+		sightMaxDistance: 500
 	});
 	const flashlight = new Flashlight();
 	const UiPadding = 30;
@@ -61,10 +62,15 @@ Engine.Run = function() {
 
 		LevelContainer.addChild
 		(
-			floorSprite,
+			PlayerVisibleAreaMask,
 			flashlightSprite,
+			floorSprite,
 			HighlightsChangel,
+			Draw,
 		);
+		
+		LevelContainer.x = Screen.width * 0.5 - player.x;
+		LevelContainer.y = Screen.height * 0.5 - player.y;
 		
 		UIStage.addChild
 		(
@@ -127,7 +133,7 @@ Engine.Run = function() {
 			const timeDelta = (currentTime - lastUpdateTime) / 1000;
 			lastUpdateTime = currentTime;
 
-
+			
 			// INPUT & MOVEMENT
 			//////////////////////////////////////////////////////////////////////
 
@@ -180,16 +186,18 @@ Engine.Run = function() {
 			if (velocity.x !== 0)
 			{
 				player.x += (velocity.x / velocityLength) * Math.abs(velocity.x) * timeDelta;
-				// player.FOVarea.x = player.x;
-				// flashlightSprite.x = player.x;
+				player.FOVarea.x = player.x;
+				flashlightSprite.x = player.x;
+				LevelContainer.x = Screen.width * 0.5 - player.x;
 			};
 			if (velocity.y !== 0)
 			{
 				player.y += (velocity.y / velocityLength) * Math.abs(velocity.y) * timeDelta;
-				// player.FOVarea.y = player.y;
-				// flashlightSprite.y = player.y;
+				player.FOVarea.y = player.y;
+				flashlightSprite.y = player.y;
+				LevelContainer.y = Screen.height * 0.5 - player.y;
 			};
-
+			
 			velocity.x *= friction;
 			if (velocity.x < 0.01 && velocity.x > -0.01) velocity.x = 0;
 			velocity.y *= friction;
@@ -259,7 +267,10 @@ Engine.Run = function() {
 				batteryDeadSound.play();
 			};
 				
-			flashlightSprite.rotation = Mouse.getMouseToPointAngle( player );
+			flashlightSprite.rotation = Mouse.getMouseToPointAngle({
+				x: LevelContainer.x + player.x,
+				y: LevelContainer.y + player.y,
+			});
 
 			if (flashlightSprite.visible)
 			{
@@ -290,6 +301,7 @@ Engine.Run = function() {
 			FlashlightIconMask.clear();
 			HighlightsChangel.clear();
 			HealthMask.clear();
+			UIDraw.clear();
 			
 			// Draw mask of the area that's visible for the player
 			if (flashlightSprite.visible)
@@ -333,7 +345,7 @@ Engine.Run = function() {
 			{
 				fillRectangle
 				(
-					Draw,
+					UIDraw,
 					Screen.width * 0.5 - (70  * player.stamina),
 					Screen.height - UiPadding - 5,
 					140 * player.stamina,
@@ -375,10 +387,10 @@ Engine.Run = function() {
 			//////////////////////////////////////////////////////////////////////
 			
 			// draw all obstacles
-			obstacles.forEach(obstacle => {
-				// fillPolygon( Draw, obstacle.getPoints(), 0x000000 );
-				strokePolygon( Draw, obstacle.getPoints(), 1, 0x222222 );					
-			});
+			// obstacles.forEach(obstacle => {
+			// 	fillPolygon( Draw, obstacle.getPoints(), 0x000000 );
+			// 	// strokePolygon( Draw, obstacle.getPoints(), 1, 0x222222 );					
+			// });
 
 			// Draw view area circle
 			// Draw.lineStyle( 1, 0xFF0000, 0.7 );

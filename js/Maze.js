@@ -4,11 +4,11 @@
 
     const map = {
         // n tiles horizontally
-        width: 8,
+        width: 16,
         // n tiles vertically
-        height: 8,
+        height: 16,
         // tiles are squares that are base for maze generation algorythm
-        tileWidth: 96,
+        tileWidth: 160,
         wallsThickness: 16,
     }
 

@@ -34,8 +34,8 @@
 		const LevelContainer = new Container();
 		Stage.addChild( LevelContainer );
 		LevelContainer.zIndex = 10;
-		LevelContainer.width = Screen.width;
-		LevelContainer.height = Screen.height;
+		LevelContainer.width = 2000;
+		LevelContainer.height = 2000;
 
 		const UIStage = new Container();
 		Stage.addChild( UIStage );
@@ -57,7 +57,10 @@
 		// General purposes draw
 		const Draw = new Pixi.Graphics();
 		Draw.zIndex = 100;
-		Stage.addChild( Draw );
+
+		const UIDraw = new Pixi.Graphics();
+		UIDraw.zIndex = 100;
+		UIStage.addChild( UIDraw );
 		
 		return {
 			Draw,
@@ -73,6 +76,7 @@
 			Screen,
 			Sprite: Pixi.Sprite,
 			Stage,
+			UIDraw,
 			UIStage,
 		}
 	}
