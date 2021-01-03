@@ -31,28 +31,11 @@
 		UpdateRendereSize();
 		window.addEventListener( 'resize', UpdateRendereSize );
 
-		// Masks
-		const PlayerVisibleAreaMask = new Pixi.Graphics();
-		const FlashlightIconMask = new Pixi.Graphics();
-		const HealthMask = new Pixi.Graphics();
-		
-		const BackgroundStage = new Container();
-		Stage.addChild( BackgroundStage );
-		BackgroundStage.zIndex = 1;
-		BackgroundStage.width = Screen.width;
-		BackgroundStage.height = Screen.height;
-		
-		const PlayerVisibleAreaContainer = new Container();
-		Stage.addChild( PlayerVisibleAreaContainer );
-		PlayerVisibleAreaContainer.zIndex = 1;
-		PlayerVisibleAreaContainer.width = Screen.width;
-		PlayerVisibleAreaContainer.height = Screen.height;
-		
-		const PlayerSightStage = new Container();
-		Stage.addChild( PlayerSightStage );
-		PlayerSightStage.zIndex = 10;
-		PlayerSightStage.width = Screen.width;
-		PlayerSightStage.height = Screen.height;
+		const LevelContainer = new Container();
+		Stage.addChild( LevelContainer );
+		LevelContainer.zIndex = 10;
+		LevelContainer.width = Screen.width;
+		LevelContainer.height = Screen.height;
 
 		const UIStage = new Container();
 		Stage.addChild( UIStage );
@@ -61,6 +44,11 @@
 		UIStage.height = Screen.height;
 
 		const HighlightsChangel = new Pixi.Graphics();
+
+		// Masks
+		const PlayerVisibleAreaMask = new Pixi.Graphics();
+		const FlashlightIconMask = new Pixi.Graphics();
+		const HealthMask = new Pixi.Graphics();
 	
 		Engine.Assets.Textures.forEach( textureName => {
 			Loader.add( textureName, `assets/images/${textureName}.png` );
@@ -72,7 +60,6 @@
 		Stage.addChild( Draw );
 		
 		return {
-			BackgroundStage,
 			Draw,
 			FlashlightIconMask,
 			Graphics,
@@ -80,8 +67,7 @@
 			HighlightsChangel,
 			Loader,
 			Pixi,
-			PlayerSightStage,
-			PlayerVisibleAreaContainer,
+			LevelContainer,
 			PlayerVisibleAreaMask,
 			Renderer,
 			Screen,

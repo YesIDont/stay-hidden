@@ -21,10 +21,52 @@
 				background-color: #000;
 				display: block;
 			}
+			.you-died {
+				align-items: center;
+				background-color: #ff2000;
+				cursor: initial;
+				display: none;
+				height: 100%;
+				position: fixed;
+				width: 100%;
+				z-index: 10;
+			}
+
+			.you-died div {
+				color: #131313;
+				font-size: 80px;
+				text-align: center;
+				width: 100%;
+				z-index: 10;
+			}
+
+			.you-died button {
+				background-color: transparent;
+				border: 1px solid #131313;
+				display: block;
+				font-size: 20px;
+				margin: 20px auto 0 auto;
+				padding: 8px 21px;
+				-webkit-transition: background-color 0.3s ease, color 0.3s ease;
+				-ms-transition: background-color 0.3s ease, color 0.3s ease;
+				transition: background-color 0.3s ease, color 0.3s ease;
+			}
+
+			.you-died button:hover {
+				background-color: #131313;
+				color: #ff2000;
+				cursor: pointer;
+			}
 		</style>
 	</head>
 
 	<body>
+		<div class="you-died">
+			<div>
+				You Died
+				<button type="button" class="restart-button">restart</button>
+			</div>
+		</div>
 		<script src="js/lib/pixi.js"></script>
 		<script src="js/lib/howler.js"></script>
 
@@ -37,12 +79,14 @@
 		<script src="js/collisions/polygon.js"></script>
 		<script src="js/collisions/point.js"></script>
 		<script src="js/collisions/collisions.js"></script>
+
 		
 		<script src="js/utils/Utils.js"></script>
 		<script src="js/utils/GetRaySegmentIntersection.js"></script>
 		<script src="js/utils/GetFOVpolygon.js"></script>
 
 		<script src="js/Engine.js"></script>
+		<script src="js/Maze.js"></script>
 		<script src="js/Assets.js"></script>
 		<script src="js/SetupPixi.js"></script>
 		<script src="js/Vector.js"></script>
@@ -51,6 +95,7 @@
 		<script src="js/Map.js"></script>
 		<script src="js/Mouse.js"></script>
 		<script src="js/Keys.js"></script>
+		<script src="js/UI.js"></script>
 		<script src="js/Run.js"></script>
 
 		<script>

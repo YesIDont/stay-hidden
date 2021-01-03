@@ -86,6 +86,13 @@ function fillRectangle( pixiGraphics, x, y, width, height, color = 0x000000, alp
     pixiGraphics.endFill();
 }
 
+function strokeSegment( pixiGraphics, startPoint, endPoint, lineThickness = 1, color = 0x000000 )
+{
+    pixiGraphics.lineStyle( lineThickness, color );
+    pixiGraphics.moveTo( startPoint.x, startPoint.y );
+    pixiGraphics.lineTo( endPoint.x, endPoint.y );
+}
+
 function strokePolygon( pixiGraphics, points, lineThickness = 1, color = 0x000000 )
 {
     pixiGraphics.lineStyle( lineThickness, color );
