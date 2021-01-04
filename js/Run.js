@@ -1,8 +1,35 @@
 "use strict";
 
-Engine.Run = function() {
+Engine.Run = function()
+{
+	const {
+		Assets,
+		ECollisions,
+		Flashlight,
+		Keys,
+		KeysBindings,
+		Map,
+		Mouse,
+		Player,
+		Result,
+	} = Engine;
 
-	const { Assets, ECollisions, Flashlight, Keys, KeysBindings, Mouse, Player, Result } = Engine;
+	const map = new Map({
+		columns: 16,
+		rows: 16,
+		tileSize: 160,
+		wallsThickness: 16,
+	});
+	const mapSize = map.GetSize();
+	const player = new Player({
+		x: 50,
+		y: 50,
+		size: 10,
+		maxSpeed: 80,
+		sightMaxDistance: 500
+	});
+	const flashlight = new Flashlight();
+	const UiPadding = 30;
 
 	const {
 		Draw,
@@ -16,21 +43,12 @@ Engine.Run = function() {
 		PlayerVisibleAreaMask,
 		UIDraw,
 		UIStage,
-	} = Engine.SetupPixiJS();
-	
-	const player = new Player({
-		x: 50,
-		y: 50,
-		size: 10,
-		maxSpeed: 80,
-		sightMaxDistance: 500
-	});
-	const flashlight = new Flashlight();
-	const UiPadding = 30;
+	} = Engine.SetupPixiJS( mapSize );
 	
 	PlayerVisibleAreaMask.lineStyle(0);
 
-	function AssetsPostLoadActions( loader, resources ) {
+	function AssetsPostLoadActions( loader, resources )
+	{
 		
 		const {
 			aimSightSprite,
@@ -54,6 +72,9 @@ Engine.Run = function() {
 		iconHealth.x = iconHealthLostRed.x = Screen.width - iconHealth.width - UiPadding;
 		iconHealth.y = iconHealthLostRed.y = Screen.height - iconHealth.height - UiPadding;
 		iconHealth.mask = HealthMask;
+
+		floorSprite.width = mapSize.width;
+		floorSprite.height = mapSize.height;
 		
 		iconFlashlight.mask = FlashlightIconMask;
 		floorSprite.mask = flashlightSprite;
@@ -101,25 +122,19 @@ Engine.Run = function() {
 			return shape;
 		}
 
-		// create map from polygons data
-		// const obstacles = [];
-		// mapData.forEach(segment => {
-		// 		const obstacle = makeShape(segment, ['obstacle']);
-		// 		obstacles.push(obstacle);
-		// });
-		const obstacles = Engine.GenerateMaze( ECollisions );
-
 		// add vewport borders to mapData
 		makeShape	
 		(
 			[
-				{a:{x:0,y:0}, b:{x:Screen.width,y:0}},
-				{a:{x:Screen.width,y:0}, b:{x:Screen.width,y:Screen.height}},
-				{a:{x:Screen.width,y:Screen.height}, b:{x:0,y:Screen.height}},
-				{a:{x:0,y:Screen.height}, b:{x:0,y:0}},
+				{a:{x:0,y:0}, b:{x:mapSize.width,y:0}},
+				{a:{x:mapSize.width,y:0}, b:{x:mapSize.width,y:mapSize.height}},
+				{a:{x:mapSize.width,y:mapSize.height}, b:{x:0,y:mapSize.height}},
+				{a:{x:0,y:mapSize.height}, b:{x:0,y:0}},
 			],
 			['obstacle', 'bounds']
 		);
+
+		const obstacles = Engine.GenerateMaze( ECollisions, map );
 
 		let lastUpdateTime = new Date().getTime();
 		let potentials = null;

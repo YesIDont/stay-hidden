@@ -46,7 +46,7 @@
     // Below are names of the texture files, that all are placed in one directory
     // All textures are and should be of png file type
     const AIM_TEXTURE = 'aim';
-    const FLOOR_TEXTURE = 'floor';
+    const FLOOR_TILE_TEXTURE = 'floor-tile';
     const FLASHLIGHT_TEXTURE = 'flashlight';
     const ICON_FLASHLIGHT_TEXTURE = 'icon-flashlight';
     const ICON_HEALTH_TEXTURE = 'health';
@@ -54,16 +54,22 @@
 
     Assets.Textures = [
         AIM_TEXTURE,
-        FLOOR_TEXTURE,
+        FLOOR_TILE_TEXTURE,
         FLASHLIGHT_TEXTURE,
         ICON_FLASHLIGHT_TEXTURE,
         ICON_HEALTH_TEXTURE,
         CIRCULAR_GRADIENT_TEXTURE,
     ];
 
+    const SPRITE_TYPES = {
+        SPRITE: 'Sprite',
+        TILING_SPRITE: 'TilingSprite',
+    }
+
     Assets.Sprites = [
         {
             name: 'aimSightSprite',
+            type: SPRITE_TYPES.SPRITE,
             texture: AIM_TEXTURE,
             props: [
                 { name: 'anchor', value: [0.5, 0.5] },
@@ -73,14 +79,17 @@
         },
         {
             name: 'floorSprite',
-            texture: FLOOR_TEXTURE,
+            type: SPRITE_TYPES.TILING_SPRITE,
+            texture: FLOOR_TILE_TEXTURE,
             props: [
                 { name: 'width', value: 2000 },
                 { name: 'height', value: 2000 },
+                { name: 'tileSize', value: [64, 64] },
             ]
         },
         {
             name: 'flashlightSprite',
+            type: SPRITE_TYPES.SPRITE,
             texture: FLASHLIGHT_TEXTURE,
             props: [
                 { name: 'anchor', value: [0.5, 1] },
@@ -90,6 +99,7 @@
         },
         {
             name: 'iconFlashlightUsedRed',
+            type: SPRITE_TYPES.SPRITE,
             texture: ICON_FLASHLIGHT_TEXTURE,
             props: [
                 { name: 'width', value: 50 },
@@ -100,6 +110,7 @@
         },
         {
             name: 'iconFlashlight',
+            type: SPRITE_TYPES.SPRITE,
             texture: ICON_FLASHLIGHT_TEXTURE,
             props: [
                 { name: 'width', value: 50 },
@@ -108,6 +119,7 @@
         },
         {
             name: 'iconHealth',
+            type: SPRITE_TYPES.SPRITE,
             texture: ICON_HEALTH_TEXTURE,
             props: [
                 { name: 'width', value: 148 },
@@ -116,6 +128,7 @@
         },
         {
             name: 'iconHealthLostRed',
+            type: SPRITE_TYPES.SPRITE,
             texture: ICON_HEALTH_TEXTURE,
             props: [
                 { name: 'width', value: 148 },
@@ -126,6 +139,7 @@
         },
         {
             name: 'circularGradientSprite',
+            type: SPRITE_TYPES.SPRITE,
             texture: CIRCULAR_GRADIENT_TEXTURE,
             props: [
                 { name: 'anchor', value: [0.5, 0.5] },
@@ -142,19 +156,31 @@
         
         for ( const Asset of Assets.Sprites )
         {
-            const newSprite = new PIXI.Sprite( loadedResources[ Asset.texture ].texture );
-            
-            if ( Asset.props )
+            let props = {}
+            Asset.props.forEach(prop => {
+                props[prop.name] = prop.value;
+            });
+
+            let newSprite = {};
+
+            if (Asset.type === SPRITE_TYPES.TILING_SPRITE)
             {
-                Asset.props.forEach( prop => {
-                    if ( prop.name === 'anchor' ) {
-                        newSprite.anchor.set(prop.value[0], prop.value[1]);
-                    }
-                    else {
-                        newSprite[ prop.name ] = prop.value;                        
-                    }
-                });
+                let { tileSize, ...propsTemp } = props;
+                newSprite = new PIXI[Asset.type]( loadedResources[ Asset.texture ].texture, tileSize[0], tileSize[1] );
+                props = propsTemp;
             }
+            else {
+                newSprite = new PIXI[Asset.type]( loadedResources[ Asset.texture ].texture );
+            }
+
+            Asset.props.forEach( prop => {
+                if ( prop.name === 'anchor' ) {
+                    newSprite.anchor.set(prop.value[0], prop.value[1]);
+                }
+                else {
+                    newSprite[ prop.name ] = prop.value;
+                }
+            });
             
             Sprites[ Asset.name ] = newSprite;
         }

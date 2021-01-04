@@ -2,7 +2,7 @@
 
 (function() {
 
-	Engine.SetupPixiJS = function() {
+	Engine.SetupPixiJS = function( MapSize ) {
 
 		const Pixi = PIXI;
 		const GraphicsEngine = Pixi.Application;
@@ -34,8 +34,8 @@
 		const LevelContainer = new Container();
 		Stage.addChild( LevelContainer );
 		LevelContainer.zIndex = 10;
-		LevelContainer.width = 2000;
-		LevelContainer.height = 2000;
+		LevelContainer.width = MapSize.width;
+		LevelContainer.height = MapSize.height;
 
 		const UIStage = new Container();
 		Stage.addChild( UIStage );

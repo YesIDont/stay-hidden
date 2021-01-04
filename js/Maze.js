@@ -2,16 +2,6 @@
 
 (function() {
 
-    const map = {
-        // n tiles horizontally
-        width: 16,
-        // n tiles vertically
-        height: 16,
-        // tiles are squares that are base for maze generation algorythm
-        tileWidth: 160,
-        wallsThickness: 16,
-    }
-
     const Point = function( x = 0, y = 0 )
     {
         this.x = x;
@@ -184,9 +174,9 @@
         return result
     }
 
-    Engine.GenerateMaze = function( collisions )
+    Engine.GenerateMaze = function( collisions, map )
     {
-        const { width, height, tileWidth, wallsThickness } = map;
+        const { columns, rows, tileSize, wallsThickness } = map;
         const cells = [[]];
         const wallsAsSegments = [];
         
@@ -197,15 +187,15 @@
             return false;
         }
         
-        const mazeRef = { width, height, isCellValid };
+        const mazeRef = { width: columns, height: rows, isCellValid };
         
         // create two dimensional array of Cell objects
-        for( let i = 0; i < width; i++ )
+        for( let i = 0; i < columns; i++ )
         {
             cells[ i ] = []
-            for( let j = 0; j < height; j++ )
+            for( let j = 0; j < rows; j++ )
             {
-                cells[ i ][ j ] = new Cell( i, j, tileWidth, mazeRef );
+                cells[ i ][ j ] = new Cell( i, j, tileSize, mazeRef );
             }
         }
 
@@ -217,9 +207,9 @@
         function areAllCellsVisited()
         {
             let areAllVisited = true;
-            for( let i = 0; i < width - 1; i++ )
+            for( let i = 0; i < columns - 1; i++ )
             {
-                for( let j = 0; j < height - 1; j++ )
+                for( let j = 0; j < rows - 1; j++ )
                 {
                     const { visited } = cells[i][j];
                     if( !visited ) areAllVisited = false;
