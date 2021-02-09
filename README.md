@@ -11,7 +11,7 @@ Libraries:
 - [Pixi.js](https://www.pixijs.com/) for the GPU based rendering
 - [Howler.js](https://howlerjs.com/) that takes care of sounds
 
-Forks/libs:
+Forks:
 - [Collisions](https://github.com/YesIDont/Collisions) that use BVH theorem
 
 ## How To
