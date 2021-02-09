@@ -1,5 +1,8 @@
 ## Stay Hidden
-Simple horror like game that features simple implementation of ray marching that helps in generating run time light/shadows and bounding volume hierarchy that speeds up collision detection.
+Simple horror like game that features
+- simple implementation of ray marching that helps in generating run time light/shadows
+- bounding volume hierarchy that speeds up collision detection
+- labirynth generator
 
 ## Tech stack
 It's plane JS with HTML5 and CSS with some use of ES6 features.
