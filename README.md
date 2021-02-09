@@ -1,4 +1,4 @@
-# stay-hidden
+# Stay Hidden
 Simple horror like game that features simple implementation of ray marching that helps in generating run time light/shadows and bounding volume hierarchy that speeds up collision detection.
 
 ### Tech stack
