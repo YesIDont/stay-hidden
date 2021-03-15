@@ -6,6 +6,7 @@ Engine.Run = function()
 		Assets,
 		ECollisions,
 		Flashlight,
+		FpsDisplay,
 		Keys,
 		KeysBindings,
 		Map,
@@ -13,6 +14,12 @@ Engine.Run = function()
 		Player,
 		Result,
 	} = Engine;
+
+	const fpsDisplay = new FpsDisplay();
+
+	const Flags = {
+		DebugDraw: true,
+	}
 
 	const map = new Map({
 		columns: 16,
@@ -25,13 +32,16 @@ Engine.Run = function()
 		x: 50,
 		y: 50,
 		size: 10,
-		maxSpeed: 80,
-		sightMaxDistance: 500
+		// maxSpeed: 80,
+		maxSpeed: 270,
+		sightMaxDistance: 400, // 500,
 	});
 	const flashlight = new Flashlight();
 	const UiPadding = 30;
+	let FOVpoly = {};
 
 	const {
+		DebugDraw,
 		Draw,
 		FlashlightIconMask,
 		Graphics,
@@ -49,7 +59,6 @@ Engine.Run = function()
 
 	function AssetsPostLoadActions( loader, resources )
 	{
-		
 		const {
 			aimSightSprite,
 			floorSprite,
@@ -73,33 +82,40 @@ Engine.Run = function()
 		iconHealth.y = iconHealthLostRed.y = Screen.height - iconHealth.height - UiPadding;
 		iconHealth.mask = HealthMask;
 
-		floorSprite.width = mapSize.width;
-		floorSprite.height = mapSize.height;
+		// floorSprite.width = mapSize.width;
+		// floorSprite.height = mapSize.height;
 		
 		iconFlashlight.mask = FlashlightIconMask;
-		floorSprite.mask = flashlightSprite;
+		// floorSprite.mask = flashlightSprite;
 		HighlightsChangel.mask = flashlightSprite;
 		LevelContainer.mask = PlayerVisibleAreaMask;
+
+		const whiteBackgroundSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
+		whiteBackgroundSprite.width = mapSize.width;
+		whiteBackgroundSprite.height = mapSize.height;
+		whiteBackgroundSprite.tint = 0xffffff;
 
 		LevelContainer.addChild
 		(
 			PlayerVisibleAreaMask,
-			flashlightSprite,
-			floorSprite,
-			HighlightsChangel,
-			Draw,
+			// flashlightSprite,
+			whiteBackgroundSprite,
+			// floorSprite,
+			// HighlightsChangel,
+			// Draw,
 		);
 		
-		LevelContainer.x = Screen.width * 0.5 - player.x;
-		LevelContainer.y = Screen.height * 0.5 - player.y;
+		DebugDraw.x = LevelContainer.x = Screen.width * 0.5 - player.x;
+		DebugDraw.y = LevelContainer.y = Screen.height * 0.5 - player.y;
 		
 		UIStage.addChild
 		(
 			iconFlashlightUsedRed,
 			iconFlashlight,
-			iconHealthLostRed,
-			iconHealth,
+			// iconHealthLostRed,
+			// iconHealth,
 			aimSightSprite,
+			DebugDraw,
 		);
 		
 		const {
@@ -139,15 +155,15 @@ Engine.Run = function()
 		let lastUpdateTime = new Date().getTime();
 		let potentials = null;
 
-		const { youDiedScreen } = Engine.GetUI();
+		const { showBHVSwitch, youDiedScreen } = Engine.GetUI();
 
-		function GlobalUpdate() {
-
+		function GlobalUpdate()
+		{
 			const { velocity, friction, halfFOV } = player;
 			const currentTime = new Date().getTime();
 			const timeDelta = (currentTime - lastUpdateTime) / 1000;
 			lastUpdateTime = currentTime;
-
+			fpsDisplay.update(timeDelta);
 			
 			// INPUT & MOVEMENT
 			//////////////////////////////////////////////////////////////////////
@@ -163,7 +179,8 @@ Engine.Run = function()
 					lightSwitchSound.play();
 				}
 			}
-			else {
+			else
+			{
 				flashlight.switchCooldown = clamp(flashlight.switchCooldown + timeDelta * 3);
 			}
 			
@@ -238,25 +255,13 @@ Engine.Run = function()
 			// get obstacles that are overlaping with FOV area
 			potentials = player.FOVarea.potentials();
 			const obstaclesWithinSight = [];
-			// Draw.strokeStyle = 'rgba(255, 0, 0, 0.2)';
 			for(const body of potentials)
 			{
-				const colorSave = body.color;
 				if(body.tags && body.tags.includes('obstacle') && player.FOVarea.collides(body, Result))
 				{
 					obstaclesWithinSight.push(body);
 				}
 			}
-
-			// get FOV bounding vectors
-			// const playerToMouseVector = {
-			// 	x: Mouse.x - player.x,
-			// 	y: Mouse.y - player.y,
-			// }
-			// const FOVbounds = {
-			// 	left:  getRotatedVector(playerToMouseVector, -halfFOV, Mouse),
-			// 	right: getRotatedVector(playerToMouseVector, halfFOV, Mouse),
-			// };
 
 			// STATE UDPATES
 			//////////////////////////////////////////////////////////////////////
@@ -275,12 +280,12 @@ Engine.Run = function()
 					: flashlight.juice + timeDelta / 8
 			);
 				
-			if (flashlight.juice === 0)
-			{
-				flashlightSprite.visible = false;
-				flashlight.switchCooldown = 0;
-				batteryDeadSound.play();
-			};
+			// if (flashlight.juice === 0)
+			// {
+			// 	flashlightSprite.visible = false;
+			// 	flashlight.switchCooldown = 0;
+			// 	batteryDeadSound.play();
+			// };
 				
 			flashlightSprite.rotation = Mouse.getMouseToPointAngle({
 				x: LevelContainer.x + player.x,
@@ -310,6 +315,7 @@ Engine.Run = function()
 			// DRAW
 			//////////////////////////////////////////////////////////////////////
 
+			DebugDraw.clear();
 			Draw.clear();
 			Draw.lineStyle(0);
 			PlayerVisibleAreaMask.clear();
@@ -317,15 +323,19 @@ Engine.Run = function()
 			HighlightsChangel.clear();
 			HealthMask.clear();
 			UIDraw.clear();
-			
+
 			// Draw mask of the area that's visible for the player
 			if (flashlightSprite.visible)
 			{
 				const visiblePolygons = [];
-				const FOVpoly = GetFOVpolygon(player, obstaclesWithinSight, visiblePolygons);
+				FOVpoly = GetFOVpolygon(player, obstaclesWithinSight, visiblePolygons);
 				if (FOVpoly.length > 0)
 				{
-					PlayerVisibleAreaMask.beginFill( 0xFFFFFF );
+					// PlayerVisibleAreaMask.blendMode = PIXI.BLEND_MODES.NORMAL;
+					// fillCircle(PlayerVisibleAreaMask, player, player.sightMaxDistance, 0xFFFFFF);
+					
+					// PlayerVisibleAreaMask.blendMode = PIXI.BLEND_MODES.DIFFERENCE;
+					PlayerVisibleAreaMask.beginFill( 0xFF0000 );
 					PlayerVisibleAreaMask.moveTo(FOVpoly[0].x, FOVpoly[0].y);
 					// HighlightsChangel.moveTo(FOVpoly[0].x, FOVpoly[0].y);
 					for ( let i = 1; i < FOVpoly.length; i++ )
@@ -337,15 +347,8 @@ Engine.Run = function()
 					// HighlightsChangel.lineTo(FOVpoly[0].x, FOVpoly[0].y);
 					PlayerVisibleAreaMask.endFill();
 					
-					visiblePolygons.forEach(polygon => {
-						strokePolygon(HighlightsChangel, polygon, 3, 0x888888);
-					});
-
-					// Debug draw: sight rays
-					// Draw.lineStyle( 1, 0xFF0000, 0.1);
-					// FOVpoly.forEach(point => {
-					// 	Draw.moveTo(point.x, point.y);
-					// 	Draw.lineTo(player.x, player.y);
+					// visiblePolygons.forEach(polygon => {
+					// 	strokePolygon(HighlightsChangel, polygon, 3, 0x888888);
 					// });
 				}				
 			}
@@ -354,7 +357,7 @@ Engine.Run = function()
 			// UI
 			//////////////////////////////////////////////////////////////////////
 
-			// Draw white stripe shrinking when player runs and growing when stamina
+			// Draw white stripe shrinking when player is sprinting and growing when stamina
 			// is regenerating
 			if (player.stamina < 1)
 			{
@@ -400,29 +403,80 @@ Engine.Run = function()
 			
 			// DEBUG DRAW
 			//////////////////////////////////////////////////////////////////////
-			
-			// draw all obstacles
-			// obstacles.forEach(obstacle => {
-			// 	fillPolygon( Draw, obstacle.getPoints(), 0x000000 );
-			// 	// strokePolygon( Draw, obstacle.getPoints(), 1, 0x222222 );					
-			// });
 
-			// Draw view area circle
-			// Draw.lineStyle( 1, 0xFF0000, 0.7 );
-			// Draw.drawCircle(player.x, player.y, player.sightMaxDistance);
+			if (Flags.DebugDraw)
+			{
+				DebugDraw.x = LevelContainer.x;
+				DebugDraw.y = LevelContainer.y;
 
-			// // draw player
-			// Draw.lineStyle(0);
-			// Draw.beginFill( 0xFF0000 );
-			// Draw.drawCircle(player.x, player.y, 10);
-			// Draw.endFill();
+				// draw all obstacles
+				obstacles.forEach( obstacle => {
+					strokePolygon( DebugDraw, obstacle.getPoints(), 1, 0x999999, 0.05 );
+				});
 
-			// // draw line from player to Mouse
-			// strokeSegment(Draw, player, Mouse, 'cyan');
+				obstaclesWithinSight.forEach(obstacle => {
+					if (!obstacle.tags.includes('bounds'))
+					{
+						fillPolygon( DebugDraw, obstacle.getPoints(), 0xFF0000, 0.5 );
+					}
+				});
 
-			// Draw FOV
-			// strokeSegment(Draw, player, FOVbounds.left, 1, 0xFF0000);
-			// strokeSegment(Draw, player, FOVbounds.right, 1, 0x00FF00);
+	
+				// Draw view area circle
+				DebugDraw.lineStyle( 1, 0xFF0000, 0.5 );
+				DebugDraw.drawCircle( player.x, player.y, player.sightMaxDistance );
+	
+				// sight rays
+				if (FOVpoly)
+				{
+					DebugDraw.lineStyle( 1, 0x009FFB, 0.3 );
+					FOVpoly.forEach(point => {
+						DebugDraw.moveTo(point.x, point.y);
+						DebugDraw.lineTo(player.x, player.y);
+					});
+				}
+
+				// draw player
+				fillCircle(DebugDraw, player, 10, 0x00FF00);
+				// DebugDraw.lineStyle(0);
+				// DebugDraw.beginFill( 0x00FF00 );
+				// DebugDraw.drawCircle(player.x, player.y, 10);
+				// DebugDraw.endFill();
+	
+				// Draw FOV
+				const mouseWorldPosition = Mouse.getMouseWorldPosition(LevelContainer);
+				let playerToMouseVector = {
+					x: mouseWorldPosition.x - player.x,
+					y: mouseWorldPosition.y - player.y,
+				};
+				playerToMouseVector = normalizeVector(playerToMouseVector);
+				playerToMouseVector.x *= player.sightMaxDistance;
+				playerToMouseVector.y *= player.sightMaxDistance;
+
+				const FOVbounds = {
+					left:  getRotatedVector(playerToMouseVector, -halfFOV, player),
+					right: getRotatedVector(playerToMouseVector, halfFOV, player),
+				};
+
+				DebugDraw.beginFill(0x00FF00, 0.3);
+				DebugDraw.lineStyle(0);
+				DebugDraw.moveTo(player.x, player.y);
+				// DebugDraw.lineTo(FOVbounds.left.x, FOVbounds.left.y);
+				// DebugDraw.lineTo(FOVbounds.right.x, FOVbounds.right.y);
+				const mod = angleToRadians((180 - (player.FOV)) * 0.5);
+				// angleToRadians(player.FOV)
+				DebugDraw.arc(player.x, player.y, player.sightMaxDistance, flashlightSprite.rotation - Math.PI + mod, flashlightSprite.rotation - mod);
+				// DebugDraw.lineTo(player.x, player.y);
+				DebugDraw.endFill();
+
+				strokeSegment(DebugDraw, player, FOVbounds.left, 1, 0x00FF00);
+				strokeSegment(DebugDraw, player, FOVbounds.right, 1, 0x00FF00);
+				
+				if (showBHVSwitch.checked) {
+					DebugDraw.lineStyle(1, 0x00FF00, 0.3);
+					ECollisions.drawBVH(DebugDraw);
+				}
+			}			
 		}
 
 		Graphics.ticker.add( GlobalUpdate );

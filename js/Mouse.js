@@ -9,13 +9,23 @@
         // objects attached to mouse will receive mouse position witch each mouse update
         attachedObjects: [],
 
-        getMouseToPointAngle( point ) {
+        getMouseToPointAngle(point)
+        {
             const { x, y } = point;
 
             return Math.atan2( this.x - x, y - this.y );
         },
+
+        getMouseWorldPosition(worldContainer)
+        {
+            return {
+                x: this.x - worldContainer.x,
+                y: this.y - worldContainer.y,
+            }
+        },
         
-        attach( object ) {
+        attach(object)
+        {
             this.attachedObjects.push( object );
         }
     };

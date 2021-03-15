@@ -4,14 +4,14 @@
 
     const { ECollisions, Vector } = Engine;
 
-    const Player = function({ x, y, size, maxSpeed, sightMaxDistance })
+    const Player = function({ x, y, size, maxSpeed, sightMaxDistance, FOV = 130 })
     {
         let body = ECollisions.createCircle( x, y, size );
         body.maxHealth = 10;
         body.currentHealth = body.maxHealth * 0.6;
         body.FOVarea = ECollisions.createCircle( x, y, sightMaxDistance );
-        body.FOV = 120;
-        body.halfFOV = this.FOV;
+        body.FOV = FOV;
+        body.halfFOV = FOV * 0.5;
         body.velocity = new Vector();
         body.walkSpeed = maxSpeed;
         body.sprintSpeed = maxSpeed * 2;

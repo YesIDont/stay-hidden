@@ -115,3 +115,36 @@ function fillPolygon( pixiGraphics, points, color = 0x000000, alpha = 1 )
     pixiGraphics.lineTo(points[0][0], points[0][1]);
     pixiGraphics.endFill();
 }
+
+function fillCircle( pixiGraphics, centerPoint, radius, color = 0x000000, alpha = 1 )
+{
+    pixiGraphics.lineStyle(0);
+    pixiGraphics.beginFill( color, alpha );
+    pixiGraphics.drawCircle(centerPoint.x, centerPoint.y, radius);
+    pixiGraphics.endFill();
+}
+
+function angleToRadians(angle)
+{
+    return angle * (Math.PI / 180);
+}
+
+function radiansToAngle(angle)
+{
+    return angle * (180 / Math.PI);
+}
+
+function getVectorMagnitude(vector)
+{
+    return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+}
+
+function normalizeVector(vector)
+{
+    const magnitude = getVectorMagnitude(vector);
+
+    return {
+        x: vector.x / magnitude,
+        y: vector.y / magnitude,
+    }    
+}

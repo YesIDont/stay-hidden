@@ -18,8 +18,20 @@
 				width: 100%;
 			}
 			canvas {
-				background-color: #000;
+				background-color: #fff;
 				display: block;
+			}
+			.status-bar {
+				background-color: #000;
+				color: #fff;
+				display: fixed;
+				font-size: 12px;
+				left: 0;
+				top: 0;
+			}
+			.status-fps span {
+				display: inline-block;
+				min-width: 25px;
 			}
 			.you-died {
 				align-items: center;
@@ -61,6 +73,11 @@
 	</head>
 
 	<body>
+		<div class="status-bar">
+			<span class="status-bvh">
+				<label><input type="checkbox"> Show BVH</label>
+			</span>
+		</div>
 		<div class="you-died">
 			<div>
 				You Died
@@ -79,13 +96,14 @@
 		<script src="js/collisions/polygon.js"></script>
 		<script src="js/collisions/point.js"></script>
 		<script src="js/collisions/collisions.js"></script>
-
+		
 		
 		<script src="js/utils/Utils.js"></script>
 		<script src="js/utils/GetRaySegmentIntersection.js"></script>
 		<script src="js/utils/GetFOVpolygon.js"></script>
-
+		
 		<script src="js/Engine.js"></script>
+		<script src="js/FpsDisplay.js"></script>
 		<script src="js/Maze.js"></script>
 		<script src="js/Assets.js"></script>
 		<script src="js/SetupPixi.js"></script>

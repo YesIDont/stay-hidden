@@ -12,7 +12,7 @@
 		const Graphics = new GraphicsEngine({
 			antialias: true,
 			autoResize: true,
-			backgroundColor: '#111',
+			// backgroundColor: '#111',
 		});
 		Graphics.stop();
 		const Renderer = Graphics.renderer;
@@ -58,11 +58,15 @@
 		const Draw = new Pixi.Graphics();
 		Draw.zIndex = 100;
 
+		const DebugDraw = new Pixi.Graphics();
+		Draw.zIndex = 100;
+
 		const UIDraw = new Pixi.Graphics();
 		UIDraw.zIndex = 100;
-		UIStage.addChild( UIDraw );
+		UIStage.addChild(UIDraw);
 		
 		return {
+			DebugDraw,
 			Draw,
 			FlashlightIconMask,
 			Graphics,
