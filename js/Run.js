@@ -19,8 +19,8 @@ Engine.Run = function()
 	const fpsDisplay = new FpsDisplay();
 
 	const map = new Map({
-		columns: 32,
-		rows: 32,
+		columns: 4,
+		rows: 4,
 		tileSize: 140,
 		wallsThickness: 24,
 	});
@@ -215,6 +215,7 @@ Engine.Run = function()
 			velocity.y *= friction;
 			if (velocity.y < 0.01 && velocity.y > -0.01) velocity.y = 0;
 
+			monster.solveAILogic(timeDelta);
 
 			// SOLVE COLLISIONS
 			//////////////////////////////////////////////////////////////////////
@@ -287,7 +288,6 @@ Engine.Run = function()
 			footstepsSound.volume( mapValueInRangeClamped(velocityLength, 0, player.sprintSpeed ));
 			footstepsSound.rate( player.isSprinting ? 1.5 : 0.9 );
 			
-
 			// DRAW
 			//////////////////////////////////////////////////////////////////////
 

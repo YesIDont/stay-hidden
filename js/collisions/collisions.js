@@ -2,14 +2,9 @@
 
 /**
  * A collision system used to track bodies in order to improve collision detection performance
- * @class
  */
 class Collisions {
-	/**
-	 * @constructor
-	 */
 	constructor() {
-		/** @private */
 		this._bvh = new BVH();
 	}
 
