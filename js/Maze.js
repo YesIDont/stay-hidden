@@ -105,7 +105,7 @@
             }
         }
       
-        // open walls randomly but avoid opening maze's boundaries
+        // randomly open one of walls (without opening maze's boundaries)
         if( shouldOpenRandomWall ) {
             let randomWall = Math.round( Math.random() * 3 );
       
@@ -137,7 +137,7 @@
         // get reference to cell's own address coords
         const { x, y } = this.address;
         
-        // check if one of neighbour addresses (top, right, bottom or left) is valid 
+        // make sure that neighbour addresses (top, right, bottom or left) are valid
         let neighbours = [
           maze.isCellValid( x, y - 1 ),
           maze.isCellValid( x + 1, y ),
@@ -146,9 +146,7 @@
         ];
       
         // filter cells out of bounds
-        neighbours = neighbours.filter(function( element ) {
-          return !!element
-        })
+        neighbours = neighbours.filter(element => !!element);
       
         // pick randomly one of neighbours: 0 to 3
         let resultIndex = Math.round( Math.random() * ( neighbours.length - 1 ));
@@ -178,7 +176,7 @@
     {
         const { columns, rows, tileSize, wallsThickness } = map;
         const cells = [[]];
-        const wallsAsSegments = [];
+        let wallsAsSegments = [];
         
         // check if cell is valid - not out of bounds
         function isCellValid( x, y )
@@ -219,7 +217,7 @@
             return areAllVisited;
         }
         
-        while( !(areAllCellsVisited()) )
+        while( !areAllCellsVisited() )
         {
             const { x, y } = stack[ stack.length - 1 ].address;
         
@@ -290,7 +288,91 @@
             }
         }
     }
+    
+    // filter and merge horizontal walls
+    let horizontal = wallsAsSegments.filter(segment => segment.a.y === segment.b.y);
+    let horizontalMerged = [];
 
+    while (horizontal.length > 0)
+    {
+        let group = [horizontal.shift()];
+        // create group with walls on the same level and connected with either left or right points
+        horizontal = horizontal.filter(wall => {
+            // check if any wall from the group is on the same height and if at least one point is covered
+            if (group.some(item => item.a.y === wall.a.y && (item.a.x === wall.b.x || item.b.x === wall.a.x)))
+            {
+                group.push(wall);
+                return false;
+            }
+            return true;
+        });
+        // merge connected walls if there is more than one wall in a group
+        if (group.length > 1)
+        {
+            // grab two points positioned at the furthest ends of the group
+            const left = group.reduce((acc, val) => {
+                if (val.a.x < acc.x) acc.x = val.a.x;
+                return acc;
+            }, group[0].a);
+            
+            const right = group.reduce((acc, val) => {
+                if (val.b.x > acc.x) acc.x = val.b.x;
+                return acc;
+            }, group[0].b);
+
+            group = { a: left, b: right };
+        }
+        else
+        {
+            group = group[0];
+        }
+        group.isHorizontal = true;
+        horizontalMerged.push(group);
+    };
+        
+    // filter and merge vertical walls
+    let vertical = wallsAsSegments.filter(segment => segment.a.x === segment.b.x);
+    let verticalMerged = [];
+
+    while (vertical.length > 0)
+    {
+        let group = [vertical.shift()];
+        // create group with walls in the same column and connected with either top or bottom points
+        vertical = vertical.filter(wall => {
+            // check if any wall from the group is in the same column and if at least one point is covered
+            if (group.some(item => item.a.x === wall.a.x && (item.a.y === wall.b.y || item.b.y === wall.a.y)))
+            {
+                group.push(wall);
+                return false;
+            }
+            return true;
+        });
+        // merge connected walls if there is more than one wall in a group
+        if (group.length > 1)
+        {
+            // grab two points positioned at the furthest ends of the group
+            const top = group.reduce((acc, val) => {
+                if (val.a.y < acc.y) acc.y = val.a.y;
+                return acc;
+            }, group[0].a);
+            
+            const bottom = group.reduce((acc, val) => {
+                if (val.b.y > acc.y) acc.y = val.b.y;
+                return acc;
+            }, group[0].b);
+
+            group = { a: top, b: bottom };
+        }
+        else
+        {
+            group = group[0];
+        }
+        verticalMerged.push(group);
+    };
+    
+    wallsAsSegments = [...horizontalMerged, ...verticalMerged];
+        
+    // based on segments create ractangles that will be used in collisions with walls
     const wallsGeometry = wallsAsSegments.map(wall => {
         const { a, b } = wall;
         const coreWidth = b.x - a.x;
@@ -299,10 +381,31 @@
         const heightHalf = (wallsThickness + coreHeight) * 0.5;
         const x = (a.x + coreWidth * 0.5);
         const y = (a.y + coreHeight * 0.5);
-        const p0 = { x: -widthHalf, y: -heightHalf };
-        const p1 = { x: widthHalf, y: -heightHalf };
-        const p2 = { x: widthHalf, y: heightHalf };
-        const p3 = { x: -widthHalf, y: heightHalf };
+        let p0, p1, p2, p3;
+
+        if (wall.isHorizontal)
+        {
+            // Make sure neither of the horizontal wall's ends overlaps with any verticall wall.
+            // If it does - contract its corresponding end.
+            const isAOverlapped = verticalMerged.some(wall => wall.a.y < a.y && wall.b.y > a.y && wall.a.x === a.x);
+            const aMod = isAOverlapped ? wallsThickness : 0;
+
+            const isBOverlapped = verticalMerged.some(wall => wall.a.y < a.y && wall.b.y > a.y && wall.a.x === b.x);
+            const bMod = isBOverlapped ? wallsThickness : 0;
+
+            p0 = { x: -widthHalf + aMod, y: -heightHalf };
+            p1 = { x: widthHalf - bMod, y: -heightHalf };
+            p2 = { x: widthHalf - bMod, y: heightHalf };
+            p3 = { x: -widthHalf + aMod, y: heightHalf };
+        }
+        else
+        {
+            // Contract top and bottom of the vertical wall inside, to avoid overlapping with horizontal walls
+            p0 = { x: -widthHalf, y: -heightHalf + wallsThickness };
+            p1 = { x: widthHalf, y: -heightHalf + wallsThickness };
+            p2 = { x: widthHalf, y: heightHalf - wallsThickness };
+            p3 = { x: -widthHalf, y: heightHalf - wallsThickness };
+        }
         const shape = collisions.createPolygon(x, y, [
           [p0.x, p0.y],
           [p1.x, p1.y],

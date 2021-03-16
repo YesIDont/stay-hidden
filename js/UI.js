@@ -10,6 +10,7 @@
         };
         const youDiedScreen = get('.you-died');
         const restartButton = get('.you-died .restart-button');
+        const debugDrawSwitch = get('.status-debug input');
         const showBHVSwitch = get('.status-bvh input');
 
         restartButton.addEventListener
@@ -20,6 +21,7 @@
         );
 
         return {
+            debugDrawSwitch,
             showBHVSwitch,
             youDiedScreen,
         }
