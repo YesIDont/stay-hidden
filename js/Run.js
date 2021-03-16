@@ -10,6 +10,7 @@ Engine.Run = function()
 		Keys,
 		KeysBindings,
 		Map,
+		Monster,
 		Mouse,
 		Player,
 		Result,
@@ -31,7 +32,12 @@ Engine.Run = function()
 		maxSpeed: 80,
 		sightMaxDistance: 600,
 	});
-	const flashlight = new Flashlight();
+	const flashlight = new Flashlight(1000, 8);
+	const monster = new Monster({
+		x: 150,
+		y: 50,
+		size: 20,
+	});
 	const UiPadding = 30;
 	let VisibleAreaPoly = {};
 
@@ -216,15 +222,8 @@ Engine.Run = function()
 			ECollisions.update();
 
 			// solve player's collisions
-			potentials = player.potentials();
-			for (const body of potentials)
-			{
-				if(body.tags && body.tags.includes('obstacle') && !body.tags.includes('bounds') && player.collides(body, Result))
-				{
-					player.x -= Result.overlap * Result.overlap_x;
-					player.y -= Result.overlap * Result.overlap_y;
-				}
-			}
+			player.solveCollisions();			
+			monster.solveCollisions(timeDelta);			
 
 			// get obstacles that are overlaping with FOV area
 			potentials = player.FOVarea.potentials();
@@ -252,8 +251,8 @@ Engine.Run = function()
 				flashlight.juice = clamp
 				(
 					flashlightSprite.visible
-						? flashlight.juice - timeDelta / 40
-						: flashlight.juice + timeDelta / 8
+						? flashlight.juice - timeDelta / flashlight.consumptionRate
+						: flashlight.juice + timeDelta / flashlight.rechargeRate
 				);
 					
 				if (flashlight.juice === 0)
@@ -312,25 +311,17 @@ Engine.Run = function()
 				VisibleAreaPoly = GetFOVpolygon(player, obstaclesWithinSight, visiblePolygons);
 				if (VisibleAreaPoly.length > 0)
 				{
-					// PlayerVisibleAreaMask.blendMode = PIXI.BLEND_MODES.NORMAL;
-					// fillCircle(PlayerVisibleAreaMask, player, player.sightMaxDistance, 0xFFFFFF);
 					
 					// PlayerVisibleAreaMask.blendMode = PIXI.BLEND_MODES.DIFFERENCE;
 					PlayerVisibleAreaMask.beginFill( 0xFF0000 );
 					PlayerVisibleAreaMask.moveTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
-					// HighlightsChangel.moveTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
 					for ( let i = 1; i < VisibleAreaPoly.length; i++ )
 					{
 						PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[i].x, VisibleAreaPoly[i].y);
-						// HighlightsChangel.lineTo(VisibleAreaPoly[i].x, VisibleAreaPoly[i].y);
 					};
 					PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
-					// HighlightsChangel.lineTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
 					PlayerVisibleAreaMask.endFill();
 					
-					// visiblePolygons.forEach(polygon => {
-					// 	strokePolygon(HighlightsChangel, polygon, 3, 0x888888);
-					// });
 				}				
 			}
 	
@@ -418,11 +409,8 @@ Engine.Run = function()
 				}
 
 				// draw player
-				fillCircle(DebugDraw, player, 10, 0x00FF00);
-				// DebugDraw.lineStyle(0);
-				// DebugDraw.beginFill( 0x00FF00 );
-				// DebugDraw.drawCircle(player.x, player.y, 10);
-				// DebugDraw.endFill();
+				fillCircle(DebugDraw, player, player.radius, 0x00FF00);
+				fillCircle(DebugDraw, monster, monster.radius, 0xFF0000);
 	
 				// Draw FOV
 				const mouseWorldPosition = Mouse.getMouseWorldPosition(LevelContainer);

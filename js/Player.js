@@ -6,21 +6,40 @@
 
     const Player = function({ x, y, size, maxSpeed, sightMaxDistance, FOV = 130 })
     {
-        let body = ECollisions.createCircle( x, y, size );
-        body.maxHealth = 10;
-        body.currentHealth = body.maxHealth * 0.6;
-        body.FOVarea = ECollisions.createCircle( x, y, sightMaxDistance );
-        body.FOV = FOV;
-        body.halfFOV = FOV * 0.5;
-        body.velocity = new Vector();
-        body.walkSpeed = maxSpeed;
-        body.sprintSpeed = maxSpeed * 2;
-        body.friction = 0.9;
-        body.sightMaxDistance = sightMaxDistance;
-        body.isSprinting = false;
-        body.stamina = 1;
+        let player = ECollisions.createCircle( x, y, size );
+        player.maxHealth = 10;
+        player.currentHealth = player.maxHealth * 0.6;
+        player.FOVarea = ECollisions.createCircle( x, y, sightMaxDistance );
+        player.FOV = FOV;
+        player.halfFOV = FOV * 0.5;
+        player.velocity = new Vector();
+        player.walkSpeed = maxSpeed;
+        player.sprintSpeed = maxSpeed * 2;
+        player.friction = 0.9;
+        player.sightMaxDistance = sightMaxDistance;
+        player.isSprinting = false;
+        player.stamina = 1;
+        player.tags = ['player'];
 
-        return body;
+        player.solveCollisions = function()
+        {
+            const potentials = this.potentials();
+            for (const body of potentials)
+			{
+				if(body.tags && body.tags.includes('obstacle') && !body.tags.includes('bounds') && this.collides(body, Result))
+				{
+					this.x -= Result.overlap * Result.overlap_x;
+					this.y -= Result.overlap * Result.overlap_y;
+				}
+			}
+        };
+
+        player.getDamage = function(damageAmount)
+        {
+            this.currentHealth -= damageAmount;
+        }
+
+        return player;
     };
 
     Engine.Player = Player;

@@ -19,3 +19,15 @@ You can move the character with WSAD keys and rotate flash light with your mouse
 
 ## Demo
 Current build is deployed here: [https://www.stayhidden.dysonspheregames.com/](https://www.stayhidden.dysonspheregames.com/)
+
+## TO DO:
+- [ ] encapsulate all flashlight logic within flashlight class
+- [ ] encapsulate all player's logic within its own class
+- [ ] create basic game entity class that will share common logick for player, monster, statics (e.g. lockers, doors) and other entities
+- [ ] add inventory
+- [ ] consider moving to React.js/TS
+- [ ] create zippo lighter item
+- [ ] monster
+    - [x] ~~add basic physic body that can interact with evnironment~~
+    - [x] ~~make monster hurt player on overlap~~
+- [ ] rewrite fps counter to work on the main canvas instead of its own
