@@ -1,91 +1,30 @@
 "use strict";
 
-/**
- * A polygon used to detect collisions
- * @class
- */
 class Polygon extends Body {
-	/**
-	 * @constructor
-	 * @param {Number} [x = 0] The starting X coordinate
-	 * @param {Number} [y = 0] The starting Y coordinate
-	 * @param {Array<Number[]>} [points = []] An array of coordinate pairs making up the polygon - [[x1, y1], [x2, y2], ...]
-	 * @param {Number} [angle = 0] The starting rotation in radians
-	 * @param {Number} [scale_x = 1] The starting scale along the X axis
-	 * @param {Number} [scale_y = 1] The starting scale long the Y axis
-	 * @param {Number} [padding = 0] The amount to pad the bounding volume when testing for potential collisions
-	 */
 	constructor(x = 0, y = 0, points = [], angle = 0, scale_x = 1, scale_y = 1, padding = 0) {
 		super(x, y, padding);
 
-		/**
-		 * @desc The angle of the body in radians
-		 * @type {Number}
-		 */
+		// The angle of the body in radians
 		this.angle = angle;
-
-		/**
-		 * @desc The scale of the body along the X axis
-		 * @type {Number}
-		 */
 		this.scale_x = scale_x;
-
-		/**
-		 * @desc The scale of the body along the Y axis
-		 * @type {Number}
-		 */
 		this.scale_y = scale_y;
 
-
-		/** @private */
 		this._polygon = true;
-
-		/** @private */
 		this._x = x;
-
-		/** @private */
 		this._y = y;
-
-		/** @private */
 		this._angle = angle;
-
-		/** @private */
 		this._scale_x = scale_x;
-
-		/** @private */
 		this._scale_y = scale_y;
-
-		/** @private */
 		this._min_x = 0;
-
-		/** @private */
 		this._min_y = 0;
-
-		/** @private */
 		this._max_x = 0;
-
-		/** @private */
 		this._max_y = 0;
-
-		/** @private */
 		this._points = null;
-
-		/** @private */
 		this._coords = null;
-
-		/** @private */
 		this._segments = [];
-
-		/** @private */
 		this._edges = null;
-
-		/** @private */
 		this._normals = null;
-
-		/** @private */
 		this._dirty_coords = true;
-
-		/** @private */
 		this._dirty_normals = true;
 
 		Polygon.prototype.setPoints.call(this, points);
@@ -155,10 +94,6 @@ class Polygon extends Body {
 		return this._segments;
 	}
 
-	/**
-	 * Draws the polygon to a CanvasRenderingContext2D's current path
-	 * @param {CanvasRenderingContext2D} context The context to add the shape to
-	 */
 	draw(context) {
 		if(
 			this._dirty_coords ||
@@ -190,10 +125,7 @@ class Polygon extends Body {
 		}
 	}
 
-	/**
-	 * Sets the points making up the polygon. It's important to use this function when changing the polygon's shape to ensure internal data is also updated.
-	 * @param {Array<Number[]>} new_points An array of coordinate pairs making up the polygon - [[x1, y1], [x2, y2], ...]
-	 */
+	// Sets the points making up the polygon. It's important to use this function when changing the polygon's shape to ensure internal data is also updated.
 	setPoints(new_points) {
 		const count = new_points.length;
 
@@ -214,9 +146,7 @@ class Polygon extends Body {
 		this._dirty_coords = true;
 	}
 
-	/**
-	 * Calculates and caches the polygon's world coordinates based on its points, angle, and scale
-	 */
+	// Calculates and caches the polygon's world coordinates based on its points, angle, and scale
 	_calculateCoords() {
 		const x       = this.x;
 		const y       = this.y;
@@ -286,9 +216,7 @@ class Polygon extends Body {
 		this._dirty_normals = true;
 	}
 
-	/**
-	 * Calculates the normals and edges of the polygon's sides
-	 */
+	// Calculates the normals and edges of the polygon's sides
 	_calculateNormals() {
 		const coords  = this._coords;
 		const edges   = this._edges;

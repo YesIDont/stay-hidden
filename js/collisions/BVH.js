@@ -1,30 +1,14 @@
 "use strict";
 
-/**
- * A Bounding Volume Hierarchy (BVH) used to find potential collisions quickly
- * @class
- * @private
- */
+// A Bounding Volume Hierarchy (BVH) used to find potential collisions quickly
 class BVH {
-	/**
-	 * @constructor
-	 */
 	constructor() {
-		/** @private */
 		this._hierarchy = null;
-
-		/** @private */
 		this._bodies = [];
-
-		/** @private */
 		this._dirty_branches = [];
 	}
 
-	/**
-	 * Inserts a body into the BVH
-	 * @param {Circle|Polygon|Point} body The body to insert
-	 * @param {Boolean} [updating = false] Set to true if the body already exists in the BVH (used internally when updating the body's position)
-	 */
+	// Inserts a body into the BVH
 	insert(body, updating = false) {
 		if(!updating) {
 			const bvh = body._bvh;
@@ -143,11 +127,6 @@ class BVH {
 		}
 	}
 
-	/**
-	 * Removes a body from the BVH
-	 * @param {Circle|Polygon|Point} body The body to remove
-	 * @param {Boolean} [updating = false] Set to true if this is a temporary removal (used internally when updating the body's position)
-	 */
 	remove(body, updating = false) {
 		if(!updating) {
 			const bvh = body._bvh;
@@ -215,9 +194,7 @@ class BVH {
 		BVHBranch.releaseBranch(parent);
 	}
 
-	/**
-	 * Updates the BVH. Moved bodies are removed/inserted.
-	 */
+	// Updates the BVH. Moved bodies are removed/inserted.
 	update() {
 		const bodies = this._bodies;
 		const count  = bodies.length;
@@ -266,11 +243,7 @@ class BVH {
 		}
 	}
 
-	/**
-	 * Returns a list of potential collisions for a body
-	 * @param {Circle|Polygon|Point} body The body to test
-	 * @returns {Array<Body>}
-	 */
+	// Returns a list of potential collisions for a body
 	potentials(body) {
 		const results = [];
 		const min_x   = body._bvh_min_x;
@@ -340,10 +313,7 @@ class BVH {
 		return results;
 	}
 
-	/**
-	 * Draws the bodies within the BVH to a CanvasRenderingContext2D's current path
-	 * @param {CanvasRenderingContext2D} context The context to draw to
-	 */
+	// Draws the bodies within the BVH to a CanvasRenderingContext2D's current path
 	draw(context) {
 		const bodies = this._bodies;
 		const count  = bodies.length;
@@ -353,10 +323,7 @@ class BVH {
 		}
 	}
 
-	/**
-	 * Draws the BVH to a CanvasRenderingContext2D's current path. This is useful for testing out different padding values for bodies.
-	 * @param {CanvasRenderingContext2D} context The context to draw to
-	 */
+	// Draws the BVH to a CanvasRenderingContext2D's current path. This is useful for testing out different padding values for bodies.
 	drawBVH(context) {
 		let current       = this._hierarchy;
 		let traverse_left = true;

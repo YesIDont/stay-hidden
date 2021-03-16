@@ -1,14 +1,6 @@
 "use strict";
 
-/**
- * Determines if two bodies are colliding using the Separating Axis Theorem
- * @private
- * @param {Circle|Polygon|Point} a The source body to test
- * @param {Circle|Polygon|Point} b The target body to test against
- * @param {Result} [result = null] A Result object on which to store information about the collision
- * @param {Boolean} [aabb = true] Set to false to skip the AABB test (useful if you use your own collision heuristic)
- * @returns {Boolean}
- */
+// Determines if two bodies are colliding using the Separating Axis Theorem
 function SAT(a, b, result = null, aabb = true) {
 	const a_polygon = a._polygon;
 	const b_polygon = b._polygon;
@@ -75,11 +67,7 @@ function SAT(a, b, result = null, aabb = true) {
 	return collision;
 };
 
-/**
- * Determines if two bodies' axis aligned bounding boxes are colliding
- * @param {Circle|Polygon|Point} a The source body to test
- * @param {Circle|Polygon|Point} b The target body to test against
- */
+// Determines if two bodies' axis aligned bounding boxes are colliding
 function aabbAABB(a, b) {
 	const a_polygon = a._polygon;
 	const a_x       = a_polygon ? 0 : a.x;
@@ -102,13 +90,7 @@ function aabbAABB(a, b) {
 	return a_min_x < b_max_x && a_min_y < b_max_y && a_max_x > b_min_x && a_max_y > b_min_y;
 }
 
-/**
- * Determines if two polygons are colliding
- * @param {Polygon} a The source polygon to test
- * @param {Polygon} b The target polygon to test against
- * @param {Result} [result = null] A Result object on which to store information about the collision
- * @returns {Boolean}
- */
+// Determines if two polygons are colliding
 function polygonPolygon(a, b, result = null) {
 	const a_count = a._coords.length;
 	const b_count = b._coords.length;
@@ -149,14 +131,7 @@ function polygonPolygon(a, b, result = null) {
 	return true;
 }
 
-/**
- * Determines if a polygon and a circle are colliding
- * @param {Polygon} a The source polygon to test
- * @param {Circle} b The target circle to test against
- * @param {Result} [result = null] A Result object on which to store information about the collision
- * @param {Boolean} [reverse = false] Set to true to reverse a and b in the result parameter when testing circle->polygon instead of polygon->circle
- * @returns {Boolean}
- */
+// Determines if a polygon and a circle are colliding
 function polygonCircle(a, b, result = null, reverse = false) {
 	const a_coords       = a._coords;
 	const a_edges        = a._edges;
@@ -283,13 +258,7 @@ function polygonCircle(a, b, result = null, reverse = false) {
 	return true;
 }
 
-/**
- * Determines if two circles are colliding
- * @param {Circle} a The source circle to test
- * @param {Circle} b The target circle to test against
- * @param {Result} [result = null] A Result object on which to store information about the collision
- * @returns {Boolean}
- */
+// Determines if two circles are colliding
 function circleCircle(a, b, result = null) {
 	const a_radius       = a.radius * a.scale;
 	const b_radius       = b.radius * b.scale;
@@ -315,15 +284,7 @@ function circleCircle(a, b, result = null) {
 	return true;
 }
 
-/**
- * Determines if two polygons are separated by an axis
- * @param {Array<Number[]>} a_coords The coordinates of the polygon to test
- * @param {Array<Number[]>} b_coords The coordinates of the polygon to test against
- * @param {Number} x The X direction of the axis
- * @param {Number} y The Y direction of the axis
- * @param {Result} [result = null] A Result object on which to store information about the collision
- * @returns {Boolean}
- */
+// Determines if two polygons are separated by an axis
 function separatingAxis(a_coords, b_coords, x, y, result = null) {
 	const a_count = a_coords.length;
 	const b_count = b_coords.length;
