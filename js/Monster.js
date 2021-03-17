@@ -8,30 +8,32 @@
     {
         let monster = ECollisions.createCircle( x, y, size );
         monster.speed = 20;
-        monster.damage = 1;
+        monster.damage = 2;
         monster.damageCooldownSeconds = 1;
         monster.damageCooldownCounter = 0;
         monster.destination = Vector.getRandomUnit();
 
-        monster.solveCollisions = function(timeDelta)
+        monster.solveCollisions = function(Result, timeDelta)
         {
             const potentials = this.potentials();
             for (const body of potentials)
 			{
-				if(body.tags && body.tags.includes('player'))
-				{
-                    this.damageCooldownCounter += timeDelta;
-                    if (this.damageCooldownCounter > this.damageCooldownSeconds)
-                    {
-                        body.getDamage(this.damage);
-                        this.damageCooldownCounter = 0;
-                    }
-				}
-
-                if(body.tags && body.tags.includes('obstacle') && !body.tags.includes('bounds') && this.collides(body, Result))
+                if (body.tags)
                 {
-                    this.x -= Result.overlap * Result.overlap_x;
-                    this.y -= Result.overlap * Result.overlap_y;
+                    if(body.tags.includes('player'))
+                    {
+                        this.damageCooldownCounter += timeDelta;
+                        if (this.damageCooldownCounter > this.damageCooldownSeconds)
+                        {
+                            body.getDamage(this.damage);
+                            this.damageCooldownCounter = 0;
+                        }
+                    }
+    
+                    if(body.hasTags('obstacle') && this.collides(body, Result))
+                    {
+                        body.block(this, Result);
+                    }
                 }
 			}
         };

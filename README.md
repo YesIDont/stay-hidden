@@ -27,7 +27,16 @@ Current build is deployed here: [https://www.stayhidden.dysonspheregames.com/](h
 - [ ] add inventory
 - [ ] consider moving to React.js/TS
 - [ ] create zippo lighter item
+- [ ] turn global light on/off
+    - [ ] switch for player to interact with
+    - [ ] power plant that can be fueld to generate some electricity for lights for short time
+    - [ ] fuel item
+    - [ ] visuals
 - [ ] monster
+    - [ ] level exploration AI
+    - [ ] random senses, e.g. random strength of each sense and random senses number?
+    - [ ] visuals
+    - [ ] bio limbs / tentacles that shoot in movement direction that are pulling monster's body forward
     - [x] ~~add basic physic body that can interact with evnironment~~
     - [x] ~~make monster hurt player on overlap~~
 - [ ] rewrite fps counter to work on the main canvas instead of its own

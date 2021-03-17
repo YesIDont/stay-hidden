@@ -21,15 +21,14 @@
         player.stamina = 1;
         player.tags = ['player'];
 
-        player.solveCollisions = function()
+        player.solveCollisions = function(Result)
         {
             const potentials = this.potentials();
             for (const body of potentials)
 			{
-				if(body.tags && body.tags.includes('obstacle') && !body.tags.includes('bounds') && this.collides(body, Result))
+				if(body.hasTags('obstacle') && this.collides(body, Result))
 				{
-					this.x -= Result.overlap * Result.overlap_x;
-					this.y -= Result.overlap * Result.overlap_y;
+					body.block(this, Result);
 				}
 			}
         };

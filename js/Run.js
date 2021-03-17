@@ -223,8 +223,8 @@ Engine.Run = function()
 			ECollisions.update();
 
 			// solve player's collisions
-			player.solveCollisions();			
-			monster.solveCollisions(timeDelta);			
+			player.solveCollisions(Result);			
+			monster.solveCollisions(Result, timeDelta);			
 
 			// get obstacles that are overlaping with FOV area
 			potentials = player.FOVarea.potentials();

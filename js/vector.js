@@ -12,7 +12,7 @@
 
     Vector.getRandomUnit = function()
     {
-        const v = new Vector( Math.random(), Math.random() );
+        const v = new Vector( randomInRange(-1, 1), randomInRange(-1, 1) );
 
         return v.normalize();
     }

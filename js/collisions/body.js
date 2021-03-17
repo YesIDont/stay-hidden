@@ -8,6 +8,7 @@ class Body {
 
 		// The amount to pad the bounding volume when testing for potential collisions
 		this.padding = padding;
+		this.tags = [];
 		this._circle = false;
 		this._polygon = false;
 		this._point = false;
@@ -51,8 +52,19 @@ class Body {
 		return new Result();
 	}
 
-	/// Static version of the createResult() method
+	// Static version of the createResult() method
 	static createResult() {
 		return new Result();
+	}
+
+	// Collision response behavior: block other body from overlaping by pushing it back
+	// along the overlap vector
+	block(other, collisionResult) {
+		other.x -= collisionResult.overlap * collisionResult.overlap_x;
+		other.y -= collisionResult.overlap * collisionResult.overlap_y;
+	}
+
+	hasTags(...tags) {
+		return tags.some(tag => this.tags.includes(tag));
 	}
 };

@@ -400,7 +400,7 @@
         }
         else
         {
-            // Contract top and bottom of the vertical wall inside, to avoid overlapping with horizontal walls
+            // Contract top and bottom of the vertical wall to inside, to avoid overlapping with horizontal walls
             p0 = { x: -widthHalf, y: -heightHalf + wallsThickness };
             p1 = { x: widthHalf, y: -heightHalf + wallsThickness };
             p2 = { x: widthHalf, y: heightHalf - wallsThickness };
