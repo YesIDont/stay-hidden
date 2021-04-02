@@ -1,5 +1,6 @@
 "use strict";
 
+// Find points of the polygon describing visible area as seen from the point of view (player's view)
 function GetFOVpolygon(pointOfView, obstaclesWithinSight, outHitSegments)
 {
     const segments = [];

@@ -155,6 +155,16 @@
             shouldScaleGraph = false;
             updateCounter = 0;
         };
+
+        this.show = function()
+        {
+            wrapper.style.display = 'block';
+        };
+
+        this.hide = function()
+        {
+            wrapper.style.display = 'none';
+        };
     }
 
     Engine.FpsDisplay = FpsDisplay;

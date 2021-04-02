@@ -7,7 +7,7 @@
     const Monster = function({ x, y, size })
     {
         let monster = ECollisions.createCircle( x, y, size );
-        monster.speed = 20;
+        monster.speed = 30;
         monster.damage = 2;
         monster.damageCooldownSeconds = 1;
         monster.damageCooldownCounter = 0;

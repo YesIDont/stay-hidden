@@ -19,8 +19,8 @@ Engine.Run = function()
 	const fpsDisplay = new FpsDisplay();
 
 	const map = new Map({
-		columns: 4,
-		rows: 4,
+		columns: 16,
+		rows: 16,
 		tileSize: 140,
 		wallsThickness: 24,
 	});
@@ -134,6 +134,13 @@ Engine.Run = function()
 		let potentials = null;
 
 		const { debugDrawSwitch, showBHVSwitch, youDiedScreen } = Engine.GetUI();
+		debugDrawSwitch.addEventListener('change', ({ target }) => {
+			if (target.checked) {
+				fpsDisplay.show();
+				return;
+			}
+			fpsDisplay.hide();
+		});
 
 		function GlobalUpdate()
 		{

@@ -36,6 +36,7 @@ Current build is deployed here: [https://www.stayhidden.dysonspheregames.com/](h
     - [ ] level exploration AI
     - [ ] random senses, e.g. random strength of each sense and random senses number?
     - [ ] visuals
+    - [ ] hunger - the more hungry the monster gets, the more dangerous and fast it becomes
     - [ ] bio limbs / tentacles that shoot in movement direction that are pulling monster's body forward
     - [x] ~~add basic physic body that can interact with evnironment~~
     - [x] ~~make monster hurt player on overlap~~
