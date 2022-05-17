@@ -1,6 +1,6 @@
 'use strict';
 import { ECollisions } from './ECollisions.mjs';
-import { Vector } from './Vector.mjs';
+import { Vector } from './Vector2D.mjs';
 
 export const Player = function({ x, y, size, maxSpeed, sightMaxDistance, FOV = 130 })
 {
