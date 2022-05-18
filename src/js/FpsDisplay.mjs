@@ -156,13 +156,8 @@ export function FpsDisplay( initWidth = 200, initHeight = 60, initUpdateInterval
     updateCounter = 0;
   };
 
-  this.show = function()
+  this.show = function(show)
   {
-    wrapper.style.display = 'block';
-  };
-
-  this.hide = function()
-  {
-    wrapper.style.display = 'none';
+    wrapper.style.display = show ? 'block' : 'none';
   };
 }

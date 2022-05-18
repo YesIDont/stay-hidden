@@ -59,18 +59,22 @@ export function GetCanvasAspectRatio( context )
 export function GetWindowInnerSize()
 {
   return {
-    width: window.innerWidth && document.documentElement.clientWidth
-      ? Math.min( window.innerWidth, document.documentElement.clientWidth )
-      : window.innerWidth
-          || document.documentElement.clientWidth
-          || document.getElementsByTagName('body')[0].clientWidth,
-
-    height: window.innerHeight && document.documentElement.clientHeight
-      ? Math.min(window.innerHeight, document.documentElement.clientHeight)
-      : window.innerHeight
-          || document.documentElement.clientHeight
-          || document.getElementsByTagName('body')[0].clientHeight
+    width: window.innerWidth,
+    height: window.innerHeight
   };
+  // return {
+  //   width: window.innerWidth && document.documentElement.clientWidth
+  //     ? Math.min( window.innerWidth, document.documentElement.clientWidth )
+  //     : window.innerWidth
+  //         || document.documentElement.clientWidth
+  //         || document.getElementsByTagName('body')[0].clientWidth,
+
+  //   height: window.innerHeight && document.documentElement.clientHeight
+  //     ? Math.min(window.innerHeight, document.documentElement.clientHeight)
+  //     : window.innerHeight
+  //         || document.documentElement.clientHeight
+  //         || document.getElementsByTagName('body')[0].clientHeight
+  // };
 };
 
 export function fillRectangle( pixiGraphics, x, y, width, height, color = 0x000000, alpha = 1 )

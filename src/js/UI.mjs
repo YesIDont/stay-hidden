@@ -6,6 +6,7 @@ export function GetUI()
   {
     return element.querySelector(query);
   };
+  const statusBar = get('.status-bar');
   const youDiedScreen = get('.you-died');
   const restartButton = get('.you-died .restart-button');
   const debugDrawSwitch = get('.status-debug input');
@@ -19,6 +20,7 @@ export function GetUI()
   );
 
   return {
+    statusBar,
     debugDrawSwitch,
     showBHVSwitch,
     youDiedScreen,

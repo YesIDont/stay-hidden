@@ -17,15 +17,27 @@ import * as utils from './utils/Utils.mjs';
 
 function Run()
 {
-  const { clamp, randomInRange, mapValueInRangeClamped, fillRectangle, strokePolygon, fillPolygon, fillCircle, normalizeVector, getRotatedVector, angleToRadians, strokeSegment } = utils;
+  const {
+    clamp,
+    randomInRange,
+    mapValueInRangeClamped,
+    fillRectangle,
+    strokePolygon,
+    fillPolygon,
+    fillCircle,
+    normalizeVector,
+    getRotatedVector,
+    angleToRadians,
+    strokeSegment,
+  } = utils;
   const Result = Collisions.createResult();
   const fpsDisplay = new FpsDisplay();
 
   const map = new Map({
     columns: 16,
     rows: 16,
-    tileSize: 140,
-    wallsThickness: 24,
+    tileSize: 240, // 140
+    wallsThickness: 32,
   });
   const mapSize = map.GetSize();
   const player = new Player({
@@ -122,15 +134,22 @@ function Run()
     let lastUpdateTime = new Date().getTime();
     let potentials = null;
 
-    const { debugDrawSwitch, showBHVSwitch, youDiedScreen } = GetUI();
+    const { debugDrawSwitch, showBHVSwitch, youDiedScreen, statusBar } = GetUI();
     debugDrawSwitch.addEventListener('change', ({ target }) =>
     {
-      if (target.checked)
+      fpsDisplay.show(target.checked);
+    });
+
+    document.addEventListener('keydown', ({ key }) =>
+    {
+      console.log(key);
+      if (key === ' ')
       {
-        fpsDisplay.show();
-        return;
+        debugDrawSwitch.checked = !debugDrawSwitch.checked;
+        const debugOn = debugDrawSwitch.checked;
+        statusBar.style.display = debugOn ? 'inline' : 'none';
+        fpsDisplay.show(debugOn);
       }
-      fpsDisplay.hide();
     });
 
     function GlobalUpdate()
@@ -451,6 +470,6 @@ function Run()
   }
 
   Loader.load(AssetsPostLoadActions);
-};
+}
 
-window.addEventListener( 'load', Run );
+window.addEventListener('load', Run);

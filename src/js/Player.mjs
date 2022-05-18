@@ -2,12 +2,12 @@
 import { ECollisions } from './ECollisions.mjs';
 import { Vector } from './Vector2D.mjs';
 
-export const Player = function({ x, y, size, maxSpeed, sightMaxDistance, FOV = 130 })
+export const Player = function ({ x, y, size, maxSpeed, sightMaxDistance, FOV = 130 })
 {
-  let player = ECollisions.createCircle( x, y, size );
+  let player = ECollisions.createCircle(x, y, size);
   player.maxHealth = 10;
   player.currentHealth = player.maxHealth * 0.6;
-  player.FOVarea = ECollisions.createCircle( x, y, sightMaxDistance );
+  player.FOVarea = ECollisions.createCircle(x, y, 1200);
   player.FOV = FOV;
   player.halfFOV = FOV * 0.5;
   player.velocity = new Vector();
@@ -19,19 +19,19 @@ export const Player = function({ x, y, size, maxSpeed, sightMaxDistance, FOV = 1
   player.stamina = 1;
   player.tags = ['player'];
 
-  player.solveCollisions = function(Result)
+  player.solveCollisions = function (Result)
   {
     const potentials = this.potentials();
     for (const body of potentials)
     {
-      if(body.hasTags('obstacle') && this.collides(body, Result))
+      if (body.hasTags('obstacle') && this.collides(body, Result))
       {
         body.block(this, Result);
       }
     }
   };
 
-  player.getDamage = function(damageAmount)
+  player.getDamage = function (damageAmount)
   {
     this.currentHealth -= damageAmount;
   };
