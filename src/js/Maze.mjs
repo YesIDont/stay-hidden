@@ -1,6 +1,6 @@
 'use strict';
 
-const Point = function( x = 0, y = 0 )
+const Point = function (x = 0, y = 0)
 {
   this.x = x;
   this.y = y;
@@ -8,7 +8,7 @@ const Point = function( x = 0, y = 0 )
   return;
 };
 
-const Wall = function( a, b, positionInCell, isMazeBoundary )
+const Wall = function (a, b, positionInCell, isMazeBoundary)
 {
   this.a = a || new Point();
   this.b = b || new Point();
@@ -25,7 +25,7 @@ const Wall = function( a, b, positionInCell, isMazeBoundary )
   this.isMazeBoundary = isMazeBoundary;
 };
 
-const Cell = function( a, b, size, mazeRef )
+const Cell = function (a, b, size, mazeRef)
 {
   this.maze = mazeRef;
   this.visited = false;
@@ -43,37 +43,17 @@ const Cell = function( a, b, size, mazeRef )
   // top, right, bottom and left walls (clockwise)
   this.walls = [
     // 0: top
-    new Wall(
-      new Point( x, y ),
-      new Point( x + h, y ),
-      0,
-      b === 0,
-    ),
+    new Wall(new Point(x, y), new Point(x + h, y), 0, b === 0),
     // 1: right
-    new Wall(
-      new Point( x + h, y ),
-      new Point( x + h, y + h ),
-      1,
-      a === mazeRef.width - 1,
-    ),
+    new Wall(new Point(x + h, y), new Point(x + h, y + h), 1, a === mazeRef.width - 1),
     // 2: bottom
-    new Wall(
-      new Point( x, y + h ),
-      new Point( x + h, y + h ),
-      2,
-      b === mazeRef.height - 1,
-    ),
+    new Wall(new Point(x, y + h), new Point(x + h, y + h), 2, b === mazeRef.height - 1),
     // 3: left
-    new Wall(
-      new Point( x, y ),
-      new Point( x, y + h ),
-      3,
-      a === 0,
-    ),
+    new Wall(new Point(x, y), new Point(x, y + h), 3, a === 0),
   ];
 };
 
-Cell.prototype.clearWallsWith = function( neighbourCell, shouldOpenRandomWall )
+Cell.prototype.clearWallsWith = function (neighbourCell, shouldOpenRandomWall)
 {
   const { x, y } = this.address;
   const v = this.walls;
@@ -81,10 +61,10 @@ Cell.prototype.clearWallsWith = function( neighbourCell, shouldOpenRandomWall )
   const w = neighbourCell.walls;
 
   // if we are in the same column
-  if( x === a.x )
+  if (x === a.x)
   {
     // if you are below me
-    if( y < a.y )
+    if (y < a.y)
     {
       v[2].isClosed = false;
       w[0].isClosed = false;
@@ -99,7 +79,7 @@ Cell.prototype.clearWallsWith = function( neighbourCell, shouldOpenRandomWall )
   else
   {
     // if you are on the right
-    if( x < a.x )
+    if (x < a.x)
     {
       v[1].isClosed = false;
       w[3].isClosed = false;
@@ -113,35 +93,35 @@ Cell.prototype.clearWallsWith = function( neighbourCell, shouldOpenRandomWall )
   }
 
   // randomly open one of walls (without opening maze's boundaries)
-  if( shouldOpenRandomWall )
+  if (shouldOpenRandomWall)
   {
-    let randomWall = Math.round( Math.random() * 3 );
+    let randomWall = Math.round(Math.random() * 3);
 
-    switch( randomWall )
+    switch (randomWall)
     {
     case 0:
-      if( !v[2].isMazeBoundary ) v[2].isClosed = false;
-      if( !w[0].isMazeBoundary ) w[0].isClosed = false;
+      if (!v[2].isMazeBoundary) v[2].isClosed = false;
+      if (!w[0].isMazeBoundary) w[0].isClosed = false;
       break;
 
     case 1:
-      if( !v[0].isMazeBoundary ) v[0].isClosed = false;
-      if( !w[2].isMazeBoundary ) w[2].isClosed = false;
+      if (!v[0].isMazeBoundary) v[0].isClosed = false;
+      if (!w[2].isMazeBoundary) w[2].isClosed = false;
       break;
 
     case 2:
-      if( !v[1].isMazeBoundary ) v[1].isClosed = false;
-      if( !w[3].isMazeBoundary ) w[3].isClosed = false;
+      if (!v[1].isMazeBoundary) v[1].isClosed = false;
+      if (!w[3].isMazeBoundary) w[3].isClosed = false;
       break;
 
     default:
-      if( !v[3].isMazeBoundary ) v[3].isClosed = false;
-      if( !w[1].isMazeBoundary ) w[1].isClosed = false;
+      if (!v[3].isMazeBoundary) v[3].isClosed = false;
+      if (!w[1].isMazeBoundary) w[1].isClosed = false;
     }
   }
 };
 
-Cell.prototype.getNeighbour = function()
+Cell.prototype.getNeighbour = function ()
 {
   const { maze } = this;
   // get reference to cell's own address coords
@@ -149,63 +129,63 @@ Cell.prototype.getNeighbour = function()
 
   // make sure that neighbour addresses (top, right, bottom or left) are valid
   let neighbours = [
-    maze.isCellValid( x, y - 1 ),
-    maze.isCellValid( x + 1, y ),
-    maze.isCellValid( x, y + 1 ),
-    maze.isCellValid( x - 1, y ),
+    maze.isCellValid(x, y - 1),
+    maze.isCellValid(x + 1, y),
+    maze.isCellValid(x, y + 1),
+    maze.isCellValid(x - 1, y),
   ];
 
   // filter cells out of bounds
-  neighbours = neighbours.filter(element => !!element);
+  neighbours = neighbours.filter((element) => !!element);
 
   // pick randomly one of neighbours: 0 to 3
-  let resultIndex = Math.round( Math.random() * ( neighbours.length - 1 ));
+  let resultIndex = Math.round(Math.random() * (neighbours.length - 1));
   let result = neighbours[resultIndex];
 
   // in case result was already visited remove it from neighbours and draw again
-  while( result.visited )
+  while (result.visited)
   {
     // filter out current result to avoid drawing it again
-    neighbours = neighbours.filter(function( element, index )
+    neighbours = neighbours.filter(function (element, index)
     {
       return index !== resultIndex;
     });
 
     // break if neighbour array is empty
-    if( neighbours.length === 0 ) break;
+    if (neighbours.length === 0) break;
 
     // draw another neighbour
-    resultIndex = Math.round( Math.random() * ( neighbours.length - 1 ));
+    resultIndex = Math.round(Math.random() * (neighbours.length - 1));
     result = neighbours[resultIndex];
   }
 
-  if( neighbours.length === 0 ) return false;
+  if (neighbours.length === 0) return false;
 
   return result;
 };
 
-export function GenerateMaze( collisions, map )
+export function GenerateMaze(collisions, mapSettings)
 {
-  const { columns, rows, tileSize, wallsThickness } = map;
+  const { columns, rows, tileSize, wallsThickness } = mapSettings;
   const cells = [[]];
   let wallsAsSegments = [];
 
   // check if cell is valid - not out of bounds
-  function isCellValid( x, y )
+  function isCellValid(x, y)
   {
-    if( cells[ x ] && cells[ x ][ y ] ) return cells[ x ][ y ];
+    if (cells[x] && cells[x][y]) return cells[x][y];
     return false;
   }
 
   const mazeRef = { width: columns, height: rows, isCellValid };
 
   // create two dimensional array of Cell objects
-  for( let i = 0; i < columns; i++ )
+  for (let i = 0; i < columns; i++)
   {
-    cells[ i ] = [];
-    for( let j = 0; j < rows; j++ )
+    cells[i] = [];
+    for (let j = 0; j < rows; j++)
     {
-      cells[ i ][ j ] = new Cell( i, j, tileSize, mazeRef );
+      cells[i][j] = new Cell(i, j, tileSize, mazeRef);
     }
   }
 
@@ -217,30 +197,30 @@ export function GenerateMaze( collisions, map )
   function areAllCellsVisited()
   {
     let areAllVisited = true;
-    for( let i = 0; i < columns - 1; i++ )
+    for (let i = 0; i < columns - 1; i++)
     {
-      for( let j = 0; j < rows - 1; j++ )
+      for (let j = 0; j < rows - 1; j++)
       {
         const { visited } = cells[i][j];
-        if( !visited ) areAllVisited = false;
+        if (!visited) areAllVisited = false;
       }
     }
 
     return areAllVisited;
   }
 
-  while( !areAllCellsVisited() )
+  while (!areAllCellsVisited())
   {
-    const { x, y } = stack[ stack.length - 1 ].address;
+    const { x, y } = stack[stack.length - 1].address;
 
-    currentCell = cells[ x ][ y ];
+    currentCell = cells[x][y];
     currentCell.visited = true;
-    nextCell = currentCell.getNeighbour( this );
-    if( nextCell )
+    nextCell = currentCell.getNeighbour(this);
+    if (nextCell)
     {
       // clear walls between both cells and randomly open one of walls
       // const shouldOpenRandomWall = flipCoin();
-      currentCell.clearWallsWith( nextCell, true /* shouldOpenRandomWall */ );
+      currentCell.clearWallsWith(nextCell, true /* shouldOpenRandomWall */);
 
       // add cell to the stack
       stack.push(nextCell);
@@ -248,54 +228,51 @@ export function GenerateMaze( collisions, map )
     // if there is no visited cells avilable, trace the stack back to the first cell that has neighbour that was not visited avilable and start from there
     else
     {
-      while( !nextCell && stack.length > 0 )
+      while (!nextCell && stack.length > 0)
       {
         // remove last element
-        stack.splice(-1,1);
+        stack.splice(-1, 1);
 
-        if( stack.length > 0 )
+        if (stack.length > 0)
         {
-          const { x, y } = stack[ stack.length - 1 ].address;
-          currentCell = cells[ x ][ y ];
-          nextCell = currentCell.getNeighbour( this );
+          const { x, y } = stack[stack.length - 1].address;
+          currentCell = cells[x][y];
+          nextCell = currentCell.getNeighbour(this);
         }
       }
 
-      if( nextCell )
+      if (nextCell)
       {
         stack.push(nextCell);
         // clear walls between both cells and randomly open one of walls
         // const shouldOpenRandomWall = RNG( 1 );
-        currentCell.clearWallsWith( nextCell );
+        currentCell.clearWallsWith(nextCell);
         currentCell.visited = true;
       }
     }
   }
 
   // save original segments (walls) without repetitions
-  for( let i = 0; i < cells.length; i++ )
+  for (let i = 0; i < cells.length; i++)
   {
-    for( let j = 0; j < cells[0].length; j++ )
+    for (let j = 0; j < cells[0].length; j++)
     {
       const cellRef = cells[i][j];
-      if( cellRef )
+      if (cellRef)
       {
-        cellRef.walls.forEach(wall =>
+        cellRef.walls.forEach((wall) =>
         {
-          if( wall.isClosed )
+          if (wall.isClosed)
           {
             const { a, b } = wall;
             let isInPool = false;
-            wallsAsSegments.forEach(item =>
+            wallsAsSegments.forEach((item) =>
             {
-              if (
-                item.a.x === a.x && item.a.y === a.y && item.b.x === b.x && item.b.y === b.y
-              )
+              if (item.a.x === a.x && item.a.y === a.y && item.b.x === b.x && item.b.y === b.y)
               {
                 isInPool = true;
               }
-            }
-            );
+            });
             if (!isInPool)
             {
               wallsAsSegments.push({ a, b });
@@ -307,17 +284,17 @@ export function GenerateMaze( collisions, map )
   }
 
   // filter and merge horizontal walls
-  let horizontal = wallsAsSegments.filter(segment => segment.a.y === segment.b.y);
+  let horizontal = wallsAsSegments.filter((segment) => segment.a.y === segment.b.y);
   let horizontalMerged = [];
 
   while (horizontal.length > 0)
   {
     let group = [horizontal.shift()];
     // create group with walls on the same level and connected with either left or right points
-    horizontal = horizontal.filter(wall =>
+    horizontal = horizontal.filter((wall) =>
     {
       // check if any wall from the group is on the same height and if at least one point is covered
-      if (group.some(item => item.a.y === wall.a.y && (item.a.x === wall.b.x || item.b.x === wall.a.x)))
+      if (group.some((item) => item.a.y === wall.a.y && (item.a.x === wall.b.x || item.b.x === wall.a.x)))
       {
         group.push(wall);
         return false;
@@ -348,20 +325,20 @@ export function GenerateMaze( collisions, map )
     }
     group.isHorizontal = true;
     horizontalMerged.push(group);
-  };
+  }
 
   // filter and merge vertical walls
-  let vertical = wallsAsSegments.filter(segment => segment.a.x === segment.b.x);
+  let vertical = wallsAsSegments.filter((segment) => segment.a.x === segment.b.x);
   let verticalMerged = [];
 
   while (vertical.length > 0)
   {
     let group = [vertical.shift()];
     // create group with walls in the same column and connected with either top or bottom points
-    vertical = vertical.filter(wall =>
+    vertical = vertical.filter((wall) =>
     {
       // check if any wall from the group is in the same column and if at least one point is covered
-      if (group.some(item => item.a.x === wall.a.x && (item.a.y === wall.b.y || item.b.y === wall.a.y)))
+      if (group.some((item) => item.a.x === wall.a.x && (item.a.y === wall.b.y || item.b.y === wall.a.y)))
       {
         group.push(wall);
         return false;
@@ -391,30 +368,30 @@ export function GenerateMaze( collisions, map )
       group = group[0];
     }
     verticalMerged.push(group);
-  };
+  }
 
   wallsAsSegments = [...horizontalMerged, ...verticalMerged];
 
   // based on segments create ractangles that will be used in collisions with walls
-  const wallsGeometry = wallsAsSegments.map(wall =>
+  const wallsGeometry = wallsAsSegments.map((wall) =>
   {
     const { a, b } = wall;
     const coreWidth = b.x - a.x;
     const coreHeight = b.y - a.y;
     const widthHalf = (wallsThickness + coreWidth) * 0.5;
     const heightHalf = (wallsThickness + coreHeight) * 0.5;
-    const x = (a.x + coreWidth * 0.5);
-    const y = (a.y + coreHeight * 0.5);
+    const x = a.x + coreWidth * 0.5;
+    const y = a.y + coreHeight * 0.5;
     let p0, p1, p2, p3;
 
     if (wall.isHorizontal)
     {
       // Make sure neither of the horizontal wall's ends overlaps with any verticall wall.
       // If it does - contract its corresponding end.
-      const isAOverlapped = verticalMerged.some(wall => wall.a.y < a.y && wall.b.y > a.y && wall.a.x === a.x);
+      const isAOverlapped = verticalMerged.some((wall) => wall.a.y < a.y && wall.b.y > a.y && wall.a.x === a.x);
       const aMod = isAOverlapped ? wallsThickness : 0;
 
-      const isBOverlapped = verticalMerged.some(wall => wall.a.y < a.y && wall.b.y > a.y && wall.a.x === b.x);
+      const isBOverlapped = verticalMerged.some((wall) => wall.a.y < a.y && wall.b.y > a.y && wall.a.x === b.x);
       const bMod = isBOverlapped ? wallsThickness : 0;
 
       p0 = { x: -widthHalf + aMod, y: -heightHalf };
@@ -443,4 +420,4 @@ export function GenerateMaze( collisions, map )
   });
 
   return wallsGeometry;
-};
+}

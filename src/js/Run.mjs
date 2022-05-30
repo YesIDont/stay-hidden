@@ -5,7 +5,7 @@ import { ECollisions } from './ECollisions.mjs';
 import { Flashlight } from './Flashlight.mjs';
 import { FpsDisplay } from './FpsDisplay.mjs';
 import { Keys, KeysBindings } from './Keys.mjs';
-import { Map } from './Map.mjs';
+import { Level } from './Map.mjs';
 import { GenerateMaze } from './Maze.mjs';
 import { Monster } from './Monster.mjs';
 import { Mouse } from './Mouse.mjs';
@@ -33,17 +33,24 @@ function Run()
   const Result = Collisions.createResult();
   const fpsDisplay = new FpsDisplay();
 
-  const map = new Map({
-    columns: 16,
-    rows: 16,
-    tileSize: 240, // 140
-    wallsThickness: 32,
+  // const map = new Map({
+  //   columns: 16,
+  //   rows: 16,
+  //   tileSize: 240, // 140
+  //   wallsThickness: 32,
+  // });
+  const level = new Level({
+    columns: 8,
+    rows: 8,
+    tileSize: 64, // 140
+    wallsThickness: 8,
   });
-  const mapSize = map.GetSize();
+
+  const mapSize = level.GetSize();
   const player = new Player({
     x: 50,
     y: 50,
-    size: 10,
+    size: 5,
     maxSpeed: 80,
     sightMaxDistance: 600,
   });
@@ -129,7 +136,7 @@ function Run()
 
     facilityAmbient.volume(1);
 
-    const obstacles = GenerateMaze(ECollisions, map);
+    const maze = GenerateMaze(ECollisions, level);
 
     let lastUpdateTime = new Date().getTime();
     let potentials = null;
@@ -142,7 +149,6 @@ function Run()
 
     document.addEventListener('keydown', ({ key }) =>
     {
-      console.log(key);
       if (key === ' ')
       {
         debugDrawSwitch.checked = !debugDrawSwitch.checked;
@@ -388,7 +394,7 @@ function Run()
         DebugDraw.y = LevelContainer.y;
 
         // draw all obstacles
-        obstacles.forEach((obstacle) =>
+        maze.forEach((obstacle) =>
         {
           strokePolygon(DebugDraw, obstacle.getPoints(), 1, 0x999999, 0.05);
         });
