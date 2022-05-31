@@ -7,15 +7,12 @@ import { Result } from './Result.mjs';
 import { SAT } from './SAT.mjs';
 
 // A collision system used to track bodies in order to improve collision detection performance
-export class Collisions
-{
-  constructor()
-  {
+export class Collisions {
+  constructor() {
     this._bvh = new BVH();
   }
 
-  createCircle(x = 0, y = 0, radius = 0, scale = 1, padding = 0)
-  {
+  createCircle(x = 0, y = 0, radius = 0, scale = 1, padding = 0) {
     const body = new Circle(x, y, radius, scale, padding);
 
     this._bvh.insert(body);
@@ -23,8 +20,7 @@ export class Collisions
     return body;
   }
 
-  createPolygon(x = 0, y = 0, points = [[0, 0]], angle = 0, scale_x = 1, scale_y = 1, padding = 0)
-  {
+  createPolygon(x = 0, y = 0, points = [[0, 0]], angle = 0, scale_x = 1, scale_y = 1, padding = 0) {
     const body = new Polygon(x, y, points, angle, scale_x, scale_y, padding);
 
     this._bvh.insert(body);
@@ -32,8 +28,7 @@ export class Collisions
     return body;
   }
 
-  createPoint(x = 0, y = 0, padding = 0)
-  {
+  createPoint(x = 0, y = 0, padding = 0) {
     const body = new Point(x, y, padding);
 
     this._bvh.insert(body);
@@ -41,21 +36,17 @@ export class Collisions
     return body;
   }
 
-  createResult()
-  {
+  createResult() {
     return new Result();
   }
 
-  static createResult()
-  {
+  static createResult() {
     return new Result();
   }
 
   // Inserts bodies into the collision system
-  insert(...bodies)
-  {
-    for(const body of bodies)
-    {
+  insert(...bodies) {
+    for (const body of bodies) {
       this._bvh.insert(body, false);
     }
 
@@ -63,10 +54,8 @@ export class Collisions
   }
 
   // Removes bodies from the collision system
-  remove(...bodies)
-  {
-    for(const body of bodies)
-    {
+  remove(...bodies) {
+    for (const body of bodies) {
       this._bvh.remove(body, false);
     }
 
@@ -74,33 +63,28 @@ export class Collisions
   }
 
   // Updates the collision system. This should be called before any collisions are tested.
-  update()
-  {
+  update() {
     this._bvh.update();
 
     return this;
   }
 
   // Draws the bodies within the system to a CanvasRenderingContext2D's current path
-  draw(context)
-  {
+  draw(context) {
     return this._bvh.draw(context);
   }
 
-  drawBVH(context)
-  {
+  drawBVH(context) {
     return this._bvh.drawBVH(context);
   }
 
   // Returns a list of potential collisions for a body
-  potentials(body)
-  {
+  potentials(body) {
     return this._bvh.potentials(body);
   }
 
   // Determines if two bodies are colliding
-  collides(source, target, result = null, aabb = true)
-  {
+  collides(source, target, result = null, aabb = true) {
     return SAT(source, target, result, aabb);
   }
-};
+}

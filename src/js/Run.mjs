@@ -15,8 +15,7 @@ import { GetUI } from './UI.mjs';
 import { GetFOVpolygon } from './utils/GetFOVpolygon.mjs';
 import * as utils from './utils/Utils.mjs';
 
-function Run()
-{
+function Run() {
   const {
     clamp,
     randomInRange,
@@ -48,18 +47,13 @@ function Run()
 
   const mapSize = level.GetSize();
   const player = new Player({
-    x: 50,
-    y: 50,
+    x: 32 + 64 * 3,
+    y: 32 + 64 * 3,
     size: 5,
     maxSpeed: 80,
     sightMaxDistance: 600,
   });
   const flashlight = new Flashlight(1000, 8);
-  const monster = new Monster({
-    x: 150,
-    y: 50,
-    size: 20,
-  });
   const UiPadding = 30;
   let VisibleAreaPoly = {};
 
@@ -80,8 +74,7 @@ function Run()
 
   PlayerVisibleAreaMask.lineStyle(0);
 
-  function AssetsPostLoadActions(loader, resources)
-  {
+  function AssetsPostLoadActions(loader, resources) {
     const {
       aimSightSprite,
       floorSprite,
@@ -137,20 +130,24 @@ function Run()
     facilityAmbient.volume(1);
 
     const maze = GenerateMaze(ECollisions, level);
+    const monster = new Monster({
+      x: 32 + 64 * 7,
+      y: 32 + 64 * 7,
+      size: 15,
+      gridProps: maze.pathfindingData,
+      player,
+    });
 
     let lastUpdateTime = new Date().getTime();
     let potentials = null;
 
     const { debugDrawSwitch, showBHVSwitch, youDiedScreen, statusBar } = GetUI();
-    debugDrawSwitch.addEventListener('change', ({ target }) =>
-    {
+    debugDrawSwitch.addEventListener('change', ({ target }) => {
       fpsDisplay.show(target.checked);
     });
 
-    document.addEventListener('keydown', ({ key }) =>
-    {
-      if (key === ' ')
-      {
+    document.addEventListener('keydown', ({ key }) => {
+      if (key === ' ') {
         debugDrawSwitch.checked = !debugDrawSwitch.checked;
         const debugOn = debugDrawSwitch.checked;
         statusBar.style.display = debugOn ? 'inline' : 'none';
@@ -158,8 +155,7 @@ function Run()
       }
     });
 
-    function GlobalUpdate()
-    {
+    function GlobalUpdate() {
       const { velocity, friction, halfFOV } = player;
       const currentTime = new Date().getTime();
       const timeDelta = (currentTime - lastUpdateTime) / 1000;
@@ -169,59 +165,46 @@ function Run()
       //////////////////////////////////////////////////////////////////////
 
       // Flashlight switch
-      if (flashlight.switchCooldown === 1)
-      {
-        if (Keys[KeysBindings.flashlightSwitch] && flashlight.juice > 0)
-        {
+      if (flashlight.switchCooldown === 1) {
+        if (Keys[KeysBindings.flashlightSwitch] && flashlight.juice > 0) {
           flashlightSprite.visible = !flashlightSprite.visible;
           flashlight.switchCooldown = 0;
 
           lightSwitchSound.play();
         }
-      }
-      else
-      {
+      } else {
         flashlight.switchCooldown = clamp(flashlight.switchCooldown + timeDelta * 3);
       }
 
       // Sprint switch
       player.isSprinting = Keys[KeysBindings.sprint];
-      if (!debugDrawSwitch.checked)
-      {
+      if (!debugDrawSwitch.checked) {
         player.stamina = clamp(player.isSprinting ? player.stamina - timeDelta / 10 : player.stamina + timeDelta / 10);
         if (player.stamina === 0) player.isSprinting = false;
       }
 
       const currentSpeed = player.isSprinting ? player.sprintSpeed : player.walkSpeed;
       // solve player's velocity
-      if (Keys[KeysBindings.right])
-      {
+      if (Keys[KeysBindings.right]) {
         velocity.x = currentSpeed;
-      }
-      else if (Keys[KeysBindings.left])
-      {
+      } else if (Keys[KeysBindings.left]) {
         velocity.x = -currentSpeed;
       }
 
-      if (Keys[KeysBindings.up])
-      {
+      if (Keys[KeysBindings.up]) {
         velocity.y = -currentSpeed;
-      }
-      else if (Keys[KeysBindings.down])
-      {
+      } else if (Keys[KeysBindings.down]) {
         velocity.y = currentSpeed;
       }
 
       const velocityLength = velocity.getLength();
-      if (velocity.x !== 0)
-      {
+      if (velocity.x !== 0) {
         player.x += (velocity.x / velocityLength) * Math.abs(velocity.x) * timeDelta;
         player.FOVarea.x = player.x;
         flashlightSprite.x = player.x;
         LevelContainer.x = Screen.width * 0.5 - player.x;
       }
-      if (velocity.y !== 0)
-      {
+      if (velocity.y !== 0) {
         player.y += (velocity.y / velocityLength) * Math.abs(velocity.y) * timeDelta;
         player.FOVarea.y = player.y;
         flashlightSprite.y = player.y;
@@ -233,7 +216,7 @@ function Run()
       velocity.y *= friction;
       if (velocity.y < 0.01 && velocity.y > -0.01) velocity.y = 0;
 
-      monster.solveAILogic(timeDelta);
+      monster.solveAILogic(timeDelta, level.tileSize);
 
       // SOLVE COLLISIONS
       //////////////////////////////////////////////////////////////////////
@@ -247,10 +230,8 @@ function Run()
       // get obstacles that are overlaping with FOV area
       potentials = player.FOVarea.potentials();
       const obstaclesWithinSight = [];
-      for (const body of potentials)
-      {
-        if (body.tags && body.tags.includes('obstacle') && player.FOVarea.collides(body, Result))
-        {
+      for (const body of potentials) {
+        if (body.tags && body.tags.includes('obstacle') && player.FOVarea.collides(body, Result)) {
           obstaclesWithinSight.push(body);
         }
       }
@@ -258,23 +239,20 @@ function Run()
       // STATE UDPATES
       //////////////////////////////////////////////////////////////////////
 
-      if (player.currentHealth <= 0)
-      {
+      if (player.currentHealth <= 0) {
         youDiedScreen.style.display = 'flex';
         Graphics.stop();
         return;
       }
 
-      if (!debugDrawSwitch.checked)
-      {
+      if (!debugDrawSwitch.checked) {
         flashlight.juice = clamp(
           flashlightSprite.visible
             ? flashlight.juice - timeDelta / flashlight.consumptionRate
             : flashlight.juice + timeDelta / flashlight.rechargeRate,
         );
 
-        if (flashlight.juice === 0)
-        {
+        if (flashlight.juice === 0) {
           flashlightSprite.visible = false;
           flashlight.switchCooldown = 0;
           batteryDeadSound.play();
@@ -286,14 +264,10 @@ function Run()
         y: LevelContainer.y + player.y,
       });
 
-      if (flashlightSprite.visible)
-      {
-        if (flashlight.flickerCounter < flashlight.nextFlickerIn && flashlight.intensity === flashlight.maxIntensity)
-        {
+      if (flashlightSprite.visible) {
+        if (flashlight.flickerCounter < flashlight.nextFlickerIn && flashlight.intensity === flashlight.maxIntensity) {
           flashlight.flickerCounter += timeDelta;
-        }
-        else
-        {
+        } else {
           flashlight.intensity = clamp(
             Math.sin(flashlight.flickerOffset),
             flashlight.maxIntensity * 0.7,
@@ -326,17 +300,14 @@ function Run()
       UIDraw.clear();
 
       // Draw mask of the area that's visible for the player
-      if (flashlightSprite.visible)
-      {
+      if (flashlightSprite.visible) {
         const visiblePolygons = [];
         VisibleAreaPoly = GetFOVpolygon(player, obstaclesWithinSight, visiblePolygons);
-        if (VisibleAreaPoly.length > 0)
-        {
+        if (VisibleAreaPoly.length > 0) {
           // PlayerVisibleAreaMask.blendMode = PIXI.BLEND_MODES.DIFFERENCE;
           PlayerVisibleAreaMask.beginFill(0xff0000);
           PlayerVisibleAreaMask.moveTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
-          for (let i = 1; i < VisibleAreaPoly.length; i++)
-          {
+          for (let i = 1; i < VisibleAreaPoly.length; i++) {
             PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[i].x, VisibleAreaPoly[i].y);
           }
           PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
@@ -349,8 +320,7 @@ function Run()
 
       // Draw white stripe shrinking when player is sprinting and growing when stamina
       // is regenerating
-      if (player.stamina < 1)
-      {
+      if (player.stamina < 1) {
         fillRectangle(
           UIDraw,
           Screen.width * 0.5 - 70 * player.stamina,
@@ -388,21 +358,17 @@ function Run()
       // DEBUG DRAW
       //////////////////////////////////////////////////////////////////////
 
-      if (debugDrawSwitch.checked)
-      {
+      if (debugDrawSwitch.checked) {
         DebugDraw.x = LevelContainer.x;
         DebugDraw.y = LevelContainer.y;
 
         // draw all obstacles
-        maze.forEach((obstacle) =>
-        {
+        maze.wallsGeometry.forEach((obstacle) => {
           strokePolygon(DebugDraw, obstacle.getPoints(), 1, 0x999999, 0.05);
         });
 
-        obstaclesWithinSight.forEach((obstacle) =>
-        {
-          if (!obstacle.tags.includes('bounds'))
-          {
+        obstaclesWithinSight.forEach((obstacle) => {
+          if (!obstacle.tags.includes('bounds')) {
             fillPolygon(DebugDraw, obstacle.getPoints(), 0xff0000, 0.5);
           }
         });
@@ -412,11 +378,9 @@ function Run()
         DebugDraw.drawCircle(player.x, player.y, player.sightMaxDistance);
 
         // sight rays
-        if (VisibleAreaPoly)
-        {
+        if (VisibleAreaPoly) {
           DebugDraw.lineStyle(1, 0x009ffb, 0.3);
-          VisibleAreaPoly.forEach((point) =>
-          {
+          VisibleAreaPoly.forEach((point) => {
             DebugDraw.moveTo(point.x, point.y);
             DebugDraw.lineTo(player.x, player.y);
           });
@@ -461,8 +425,7 @@ function Run()
         strokeSegment(DebugDraw, player, FOVbounds.left, 1, 0x00ff00);
         strokeSegment(DebugDraw, player, FOVbounds.right, 1, 0x00ff00);
 
-        if (showBHVSwitch.checked)
-        {
+        if (showBHVSwitch.checked) {
           DebugDraw.lineStyle(1, 0x00ff00, 0.3);
           ECollisions.drawBVH(DebugDraw);
         }

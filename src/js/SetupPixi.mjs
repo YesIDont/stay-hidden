@@ -2,9 +2,7 @@
 import { Assets } from './Assets.mjs';
 import { GetCanvasAspectRatio, GetWindowInnerSize } from './utils/Utils.mjs';
 
-export function SetupPixiJS( MapSize )
-{
-
+export function SetupPixiJS(MapSize) {
   const Pixi = PIXI;
   const GraphicsEngine = Pixi.Application;
   const Container = Pixi.Container;
@@ -21,26 +19,25 @@ export function SetupPixiJS( MapSize )
   const Stage = Graphics.stage;
   Stage.sortableChildren = true;
 
-  document.body.appendChild( Graphics.view );
+  document.body.appendChild(Graphics.view);
 
-  function UpdateRendereSize()
-  {
-    Renderer.resolution = GetCanvasAspectRatio( Renderer.context );
+  function UpdateRendereSize() {
+    Renderer.resolution = GetCanvasAspectRatio(Renderer.context);
     const { width, height } = GetWindowInnerSize();
-    Renderer.resize( width, height );
-  };
+    Renderer.resize(width, height);
+  }
 
   UpdateRendereSize();
-  window.addEventListener( 'resize', UpdateRendereSize );
+  window.addEventListener('resize', UpdateRendereSize);
 
   const LevelContainer = new Container();
-  Stage.addChild( LevelContainer );
+  Stage.addChild(LevelContainer);
   LevelContainer.zIndex = 10;
   LevelContainer.width = MapSize.width;
   LevelContainer.height = MapSize.height;
 
   const UIStage = new Container();
-  Stage.addChild( UIStage );
+  Stage.addChild(UIStage);
   UIStage.zIndex = 20;
   UIStage.width = Screen.width;
   UIStage.height = Screen.height;
@@ -52,9 +49,8 @@ export function SetupPixiJS( MapSize )
   const FlashlightIconMask = new Pixi.Graphics();
   const HealthMask = new Pixi.Graphics();
 
-  Assets.Textures.forEach( textureName =>
-  {
-    Loader.add( textureName, `assets/images/${textureName}.png` );
+  Assets.Textures.forEach((textureName) => {
+    Loader.add(textureName, `assets/images/${textureName}.png`);
   });
 
   // General purposes draw
@@ -86,4 +82,4 @@ export function SetupPixiJS( MapSize )
     UIDraw,
     UIStage,
   };
-};
+}

@@ -1,9 +1,7 @@
 'use strict';
 
-export function GetUI()
-{
-  const get = (query, element = document) =>
-  {
+export function GetUI() {
+  const get = (query, element = document) => {
     return element.querySelector(query);
   };
   const statusBar = get('.status-bar');
@@ -12,12 +10,9 @@ export function GetUI()
   const debugDrawSwitch = get('.status-debug input');
   const showBHVSwitch = get('.status-bvh input');
 
-  restartButton.addEventListener
-  ('click', () =>
-  {
+  restartButton.addEventListener('click', () => {
     window.location.reload();
-  }
-  );
+  });
 
   return {
     statusBar,
@@ -25,5 +20,4 @@ export function GetUI()
     showBHVSwitch,
     youDiedScreen,
   };
-};
-
+}

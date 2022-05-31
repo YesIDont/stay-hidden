@@ -10,7 +10,7 @@ Assets.Sounds = [
       { name: 'autoplay', value: true },
       { name: 'loop', value: true },
       { name: 'volume', value: 0.7 },
-    ]
+    ],
   },
   {
     name: 'footstepsSound',
@@ -19,7 +19,7 @@ Assets.Sounds = [
       { name: 'autoplay', value: true },
       { name: 'loop', value: true },
       { name: 'volume', value: 0 },
-    ]
+    ],
   },
   {
     name: 'lightSwitchSound',
@@ -28,7 +28,7 @@ Assets.Sounds = [
       { name: 'autoplay', value: false },
       { name: 'loop', value: false },
       { name: 'volume', value: 0.5 },
-    ]
+    ],
   },
   {
     name: 'batteryDeadSound',
@@ -37,7 +37,7 @@ Assets.Sounds = [
       { name: 'autoplay', value: false },
       { name: 'loop', value: false },
       { name: 'volume', value: 1.5 },
-    ]
+    ],
   },
 ];
 
@@ -73,7 +73,7 @@ Assets.Sprites = [
       { name: 'anchor', value: [0.5, 0.5] },
       { name: 'width', value: 24 },
       { name: 'height', value: 24 },
-    ]
+    ],
   },
   {
     name: 'floorSprite',
@@ -83,7 +83,7 @@ Assets.Sprites = [
       { name: 'width', value: 2000 },
       { name: 'height', value: 2000 },
       { name: 'tileSize', value: [64, 64] },
-    ]
+    ],
   },
   {
     name: 'flashlightSprite',
@@ -93,7 +93,7 @@ Assets.Sprites = [
       { name: 'anchor', value: [0.5, 1] },
       { name: 'width', value: 900 },
       { name: 'height', value: 500 },
-    ]
+    ],
   },
   {
     name: 'iconFlashlightUsedRed',
@@ -104,7 +104,7 @@ Assets.Sprites = [
       { name: 'height', value: 20 },
       { name: 'alpha', value: 0.6 },
       { name: 'tint', value: 0xff0000 },
-    ]
+    ],
   },
   {
     name: 'iconFlashlight',
@@ -113,7 +113,7 @@ Assets.Sprites = [
     props: [
       { name: 'width', value: 50 },
       { name: 'height', value: 20 },
-    ]
+    ],
   },
   {
     name: 'iconHealth',
@@ -122,7 +122,7 @@ Assets.Sprites = [
     props: [
       { name: 'width', value: 148 },
       { name: 'height', value: 22 },
-    ]
+    ],
   },
   {
     name: 'iconHealthLostRed',
@@ -133,7 +133,7 @@ Assets.Sprites = [
       { name: 'height', value: 22 },
       { name: 'alpha', value: 0.6 },
       { name: 'tint', value: 0xff0000 },
-    ]
+    ],
   },
   {
     name: 'circularGradientSprite',
@@ -144,70 +144,56 @@ Assets.Sprites = [
       { name: 'width', value: 300 },
       { name: 'height', value: 300 },
       // { name: 'alpha', value: 0.4 },
-    ]
+    ],
   },
 ];
 
-Assets.GetSprites = function( loadedResources )
-{
+Assets.GetSprites = function (loadedResources) {
   const Sprites = {};
 
-  for ( const Asset of Assets.Sprites )
-  {
+  for (const Asset of Assets.Sprites) {
     let props = {};
-    Asset.props.forEach(prop =>
-    {
+    Asset.props.forEach((prop) => {
       props[prop.name] = prop.value;
     });
 
     let newSprite = {};
 
-    if (Asset.type === SPRITE_TYPES.TILING_SPRITE)
-    {
+    if (Asset.type === SPRITE_TYPES.TILING_SPRITE) {
       let { tileSize, ...propsTemp } = props;
-      newSprite = new PIXI[Asset.type]( loadedResources[ Asset.texture ].texture, tileSize[0], tileSize[1] );
+      newSprite = new PIXI[Asset.type](loadedResources[Asset.texture].texture, tileSize[0], tileSize[1]);
       props = propsTemp;
-    }
-    else
-    {
-      newSprite = new PIXI[Asset.type]( loadedResources[ Asset.texture ].texture );
+    } else {
+      newSprite = new PIXI[Asset.type](loadedResources[Asset.texture].texture);
     }
 
-    Asset.props.forEach( prop =>
-    {
-      if ( prop.name === 'anchor' )
-      {
+    Asset.props.forEach((prop) => {
+      if (prop.name === 'anchor') {
         newSprite.anchor.set(prop.value[0], prop.value[1]);
-      }
-      else
-      {
-        newSprite[ prop.name ] = prop.value;
+      } else {
+        newSprite[prop.name] = prop.value;
       }
     });
 
-    Sprites[ Asset.name ] = newSprite;
+    Sprites[Asset.name] = newSprite;
   }
 
   return Sprites;
 };
 
-Assets.GetSounds = function()
-{
+Assets.GetSounds = function () {
   const Sounds = {};
 
-  for ( const Asset of Assets.Sounds )
-  {
+  for (const Asset of Assets.Sounds) {
     let props = {};
-    Asset.props.forEach( prop =>
-    {
-      props[ prop.name ] = prop.value;
+    Asset.props.forEach((prop) => {
+      props[prop.name] = prop.value;
     });
 
-    Sounds[ Asset.name ] = new Howl(props);
+    Sounds[Asset.name] = new Howl(props);
   }
 
   return Sounds;
 };
 
 export { Assets };
-

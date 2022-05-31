@@ -3,10 +3,8 @@
 const branch_pool = [];
 
 // A branch within a BVH
-export class BVHBranch
-{
-  constructor()
-  {
+export class BVHBranch {
+  constructor() {
     this._bvh_parent = null;
     this._bvh_branch = true;
     this._bvh_left = null;
@@ -19,10 +17,8 @@ export class BVHBranch
   }
 
   // Returns a branch from the branch pool or creates a new branch
-  static getBranch()
-  {
-    if(branch_pool.length)
-    {
+  static getBranch() {
+    if (branch_pool.length) {
       return branch_pool.pop();
     }
 
@@ -30,14 +26,12 @@ export class BVHBranch
   }
 
   // Releases a branch back into the branch pool
-  static releaseBranch(branch)
-  {
+  static releaseBranch(branch) {
     branch_pool.push(branch);
   }
 
   // Sorting callback used to sort branches by deepest first
-  static sortBranches(branchA, branchB)
-  {
+  static sortBranches(branchA, branchB) {
     return branchA.sort > branchB.sort ? -1 : 1;
   }
-};
+}

@@ -6,11 +6,8 @@
  * in order to avoid wasting memory.
  */
 
-
-export class Result
-{
-  constructor()
-  {
+export class Result {
+  constructor() {
     this.collision = false;
 
     // The source body tested
@@ -34,4 +31,4 @@ export class Result
     // The Y direction of the shortest axis of overlap
     this.overlap_y = 0;
   }
-};
+}

@@ -1,24 +1,22 @@
 'use strict';
 
-
-function addLocalStyles(cssString)
-{
+function addLocalStyles(cssString) {
   const head = document.getElementsByTagName('head')[0];
   const s = document.createElement('style');
   s.setAttribute('type', 'text/css');
-  if (s.styleSheet)
-  {
+  if (s.styleSheet) {
     s.styleSheet.cssText = cssString;
-  }
-  else
-  {
+  } else {
     s.appendChild(document.createTextNode(cssString));
   }
   head.appendChild(s);
 }
 
-export function FpsDisplay( initWidth = 200, initHeight = 60, initUpdateInterval = 0.25 /* seconds to wait before next update */ )
-{
+export function FpsDisplay(
+  initWidth = 200,
+  initHeight = 60,
+  initUpdateInterval = 0.25 /* seconds to wait before next update */,
+) {
   const width = initWidth;
   const height = initHeight;
   const wrapper = document.createElement('div');
@@ -90,18 +88,15 @@ export function FpsDisplay( initWidth = 200, initHeight = 60, initUpdateInterval
   const drawingHeight = height - 11;
   sacledHeight = drawingHeight;
 
-  this.updateCurrent = function (value)
-  {
+  this.updateCurrent = function (value) {
     wrapper.querySelector('.fps-display-current span').innerHTML = Math.floor(value);
   };
 
-  this.updateMax = function (value)
-  {
+  this.updateMax = function (value) {
     wrapper.querySelector('.fps-display-max span').innerHTML = Math.floor(value);
   };
 
-  this.drawSegement = function (x1, y1, x2, y2, color = '#00FF00')
-  {
+  this.drawSegement = function (x1, y1, x2, y2, color = '#00FF00') {
     ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -109,55 +104,49 @@ export function FpsDisplay( initWidth = 200, initHeight = 60, initUpdateInterval
     ctx.stroke();
   };
 
-  this.drawFrame = function()
-  {
+  this.drawFrame = function () {
     const canvasContent = ctx.getImageData(0, 0, width, drawingHeight);
     ctx.clearRect(0, 0, width, drawingHeight);
-    ctx.putImageData
-    (
+    ctx.putImageData(
       canvasContent,
       -1,
       shouldScaleGraph ? drawingHeight - sacledHeight : 0,
-      0, 0,
+      0,
+      0,
       width,
-      shouldScaleGraph ? sacledHeight : drawingHeight
+      shouldScaleGraph ? sacledHeight : drawingHeight,
     );
 
     // draw single column indicating current value
-    this.drawSegement(width - 1, drawingHeight, width - 1, drawingHeight - (drawingHeight * (fps / pick)));
+    this.drawSegement(width - 1, drawingHeight, width - 1, drawingHeight - drawingHeight * (fps / pick));
 
     // draw horizontal lines to indicate ranges
     const numOfLines = Math.floor(pick / 30);
-    for (let i = 0; i < numOfLines; i++)
-    {
-      const rangeLimitAsHeight = drawingHeight - (drawingHeight * (((i + 1) * 30) / pick));
+    for (let i = 0; i < numOfLines; i++) {
+      const rangeLimitAsHeight = drawingHeight - drawingHeight * (((i + 1) * 30) / pick);
       this.drawSegement(0, rangeLimitAsHeight, width, rangeLimitAsHeight, '#FF0000');
     }
   };
 
-  this.update = function( timeDelta )
-  {
-    if (updateCounter < updateInterval)
-    {
+  this.update = function (timeDelta) {
+    if (updateCounter < updateInterval) {
       updateCounter += timeDelta;
       return;
-    };
+    }
     fps = 1 / timeDelta;
     this.updateCurrent(fps);
-    if (fps > pick)
-    {
+    if (fps > pick) {
       sacledHeight = Math.floor(drawingHeight * (pick / fps));
       pick = fps;
       this.updateMax(pick);
       shouldScaleGraph = true;
-    };
+    }
     this.drawFrame();
     shouldScaleGraph = false;
     updateCounter = 0;
   };
 
-  this.show = function(show)
-  {
+  this.show = function (show) {
     wrapper.style.display = show ? 'block' : 'none';
   };
 }
