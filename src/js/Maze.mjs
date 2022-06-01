@@ -1,16 +1,4 @@
 'use strict';
-const neighbourAddressCoords = [
-  [0, -1],
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-
-  // diagonal
-  // [-1, -1],
-  // [1, -1],
-  // [1, 1],
-  // [-1, 1],
-];
 
 const Point = function (x = 0, y = 0) {
   this.x = x;
@@ -433,6 +421,19 @@ function mapMazeCellsToPathfindingData(cells) {
       heapIndex: null,
     })),
   );
+
+  const neighbourAddressCoords = [
+    [0, -1],
+    [1, 0],
+    [0, 1],
+    [-1, 0],
+
+    // diagonal
+    // [-1, -1],
+    // [1, -1],
+    // [1, 1],
+    // [-1, 1],
+  ];
 
   return data.map((row) =>
     row.map((dataItem) => {

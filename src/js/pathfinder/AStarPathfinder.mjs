@@ -19,7 +19,6 @@ export class AStarPathfinder {
     }
 
     if (!this.pathIsFound) return;
-    path.length = 0;
     this.tracePathBackToOrigin(origin, target, path);
   }
 

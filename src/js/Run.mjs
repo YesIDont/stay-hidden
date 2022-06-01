@@ -39,21 +39,27 @@ function Run() {
   //   wallsThickness: 32,
   // });
   const level = new Level({
-    columns: 8,
-    rows: 8,
-    tileSize: 64, // 140
-    wallsThickness: 8,
+    columns: 4,
+    rows: 4,
+    tileSize: 128,
+    wallsThickness: 16,
   });
+  // const level = new Level({
+  //   columns: 1,
+  //   rows: 1,
+  //   tileSize: 512, // 140
+  //   wallsThickness: 8,
+  // });
 
   const mapSize = level.GetSize();
   const player = new Player({
-    x: 32 + 64 * 3,
-    y: 32 + 64 * 3,
+    x: 64 + 128 * 0,
+    y: 64 + 128 * 0,
     size: 5,
     maxSpeed: 80,
     sightMaxDistance: 600,
   });
-  const flashlight = new Flashlight(1000, 8);
+  const flashlight = new Flashlight(20, 10);
   const UiPadding = 30;
   let VisibleAreaPoly = {};
 
@@ -64,12 +70,15 @@ function Run() {
     Graphics,
     HealthMask,
     HighlightsChangel,
+    LightsTexture,
     Loader,
     Screen,
     LevelContainer,
     PlayerVisibleAreaMask,
     UIDraw,
     UIStage,
+    VisibilityContainer,
+    Renderer,
   } = SetupPixiJS(mapSize);
 
   PlayerVisibleAreaMask.lineStyle(0);
@@ -83,6 +92,7 @@ function Run() {
       iconFlashlight,
       iconHealthLostRed,
       iconHealth,
+      droneSprite,
     } = Assets.GetSprites(resources);
 
     Mouse.attach(aimSightSprite);
@@ -102,21 +112,17 @@ function Run() {
     floorSprite.height = mapSize.height;
 
     iconFlashlight.mask = FlashlightIconMask;
-    floorSprite.mask = flashlightSprite;
-    HighlightsChangel.mask = flashlightSprite;
-    LevelContainer.mask = PlayerVisibleAreaMask;
 
     const whiteBackgroundSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
     whiteBackgroundSprite.width = mapSize.width;
     whiteBackgroundSprite.height = mapSize.height;
     whiteBackgroundSprite.tint = 0xffffff;
 
-    LevelContainer.addChild(
+    VisibilityContainer.addChild(
       PlayerVisibleAreaMask,
-      flashlightSprite,
-      whiteBackgroundSprite,
       floorSprite,
-      HighlightsChangel,
+      droneSprite,
+      // HighlightsChangel,
       Draw,
     );
 
@@ -131,12 +137,14 @@ function Run() {
 
     const maze = GenerateMaze(ECollisions, level);
     const monster = new Monster({
-      x: 32 + 64 * 7,
-      y: 32 + 64 * 7,
-      size: 15,
+      x: 64 + 128 * 3,
+      y: 64 + 128 * 3,
+      size: 10,
       gridProps: maze.pathfindingData,
       player,
     });
+    droneSprite.x = monster.x;
+    droneSprite.y = monster.y;
 
     let lastUpdateTime = new Date().getTime();
     let potentials = null;
@@ -217,6 +225,9 @@ function Run() {
       if (velocity.y < 0.01 && velocity.y > -0.01) velocity.y = 0;
 
       monster.solveAILogic(timeDelta, level.tileSize);
+      const targetAngle = Math.atan2(monster.direction.y, monster.direction.x) + Math.PI * 0.5;
+
+      droneSprite.rotation = utils.interpolateRadians(droneSprite.rotation, targetAngle, timeDelta);
 
       // SOLVE COLLISIONS
       //////////////////////////////////////////////////////////////////////
@@ -264,6 +275,10 @@ function Run() {
         y: LevelContainer.y + player.y,
       });
 
+      droneSprite.x = monster.x;
+      droneSprite.y = monster.y;
+      // droneSprite.alpha *= 50;
+
       if (flashlightSprite.visible) {
         if (flashlight.flickerCounter < flashlight.nextFlickerIn && flashlight.intensity === flashlight.maxIntensity) {
           flashlight.flickerCounter += timeDelta;
@@ -298,6 +313,9 @@ function Run() {
       HighlightsChangel.clear();
       HealthMask.clear();
       UIDraw.clear();
+
+      // LightsTexture.render(flashlightSprite);
+      Renderer.render(flashlightSprite, LightsTexture);
 
       // Draw mask of the area that's visible for the player
       if (flashlightSprite.visible) {
@@ -374,8 +392,8 @@ function Run() {
         });
 
         // Draw view area circle
-        DebugDraw.beginFill(0xff0000, 0.2);
-        DebugDraw.drawCircle(player.x, player.y, player.sightMaxDistance);
+        // DebugDraw.beginFill(0xff0000, 0.2);
+        // DebugDraw.drawCircle(player.x, player.y, player.sightMaxDistance);
 
         // sight rays
         if (VisibleAreaPoly) {
@@ -405,22 +423,22 @@ function Run() {
           right: getRotatedVector(playerToMouseVector, halfFOV, player),
         };
 
-        DebugDraw.beginFill(0x00ff00, 0.3);
-        DebugDraw.lineStyle(0);
-        DebugDraw.moveTo(player.x, player.y);
-        // DebugDraw.lineTo(FOVbounds.left.x, FOVbounds.left.y);
-        // DebugDraw.lineTo(FOVbounds.right.x, FOVbounds.right.y);
-        const mod = angleToRadians((180 - player.FOV) * 0.5);
-        // angleToRadians(player.FOV)
-        DebugDraw.arc(
-          player.x,
-          player.y,
-          player.sightMaxDistance,
-          flashlightSprite.rotation - Math.PI + mod,
-          flashlightSprite.rotation - mod,
-        );
-        // DebugDraw.lineTo(player.x, player.y);
-        DebugDraw.endFill();
+        // DebugDraw.beginFill(0x00ff00, 0.3);
+        // DebugDraw.lineStyle(0);
+        // DebugDraw.moveTo(player.x, player.y);
+        // // DebugDraw.lineTo(FOVbounds.left.x, FOVbounds.left.y);
+        // // DebugDraw.lineTo(FOVbounds.right.x, FOVbounds.right.y);
+        // const mod = angleToRadians((180 - player.FOV) * 0.5);
+        // // angleToRadians(player.FOV)
+        // DebugDraw.arc(
+        //   player.x,
+        //   player.y,
+        //   player.sightMaxDistance,
+        //   flashlightSprite.rotation - Math.PI + mod,
+        //   flashlightSprite.rotation - mod,
+        // );
+        // // DebugDraw.lineTo(player.x, player.y);
+        // DebugDraw.endFill();
 
         strokeSegment(DebugDraw, player, FOVbounds.left, 1, 0x00ff00);
         strokeSegment(DebugDraw, player, FOVbounds.right, 1, 0x00ff00);

@@ -30,11 +30,27 @@ export function SetupPixiJS(MapSize) {
   UpdateRendereSize();
   window.addEventListener('resize', UpdateRendereSize);
 
+  // Masks
+  const PlayerVisibleAreaMask = new Pixi.Graphics();
+  const FlashlightIconMask = new Pixi.Graphics();
+  const HealthMask = new Pixi.Graphics();
+
   const LevelContainer = new Container();
   Stage.addChild(LevelContainer);
   LevelContainer.zIndex = 10;
   LevelContainer.width = MapSize.width;
   LevelContainer.height = MapSize.height;
+  LevelContainer.mask = PlayerVisibleAreaMask;
+
+  const LightsTexture = Pixi.RenderTexture.create({ width: MapSize.width, height: MapSize.height });
+  const LightsSprite = new Pixi.Sprite(LightsTexture);
+  const VisibilityContainer = new Container();
+  VisibilityContainer.mask = LightsSprite;
+  VisibilityContainer.addChild(LightsSprite);
+  LevelContainer.addChild(VisibilityContainer);
+  VisibilityContainer.zIndex = 10;
+  VisibilityContainer.width = MapSize.width;
+  VisibilityContainer.height = MapSize.height;
 
   const UIStage = new Container();
   Stage.addChild(UIStage);
@@ -43,11 +59,6 @@ export function SetupPixiJS(MapSize) {
   UIStage.height = Screen.height;
 
   const HighlightsChangel = new Pixi.Graphics();
-
-  // Masks
-  const PlayerVisibleAreaMask = new Pixi.Graphics();
-  const FlashlightIconMask = new Pixi.Graphics();
-  const HealthMask = new Pixi.Graphics();
 
   Assets.Textures.forEach((textureName) => {
     Loader.add(textureName, `assets/images/${textureName}.png`);
@@ -71,9 +82,10 @@ export function SetupPixiJS(MapSize) {
     Graphics,
     HealthMask,
     HighlightsChangel,
+    LevelContainer,
+    LightsTexture,
     Loader,
     Pixi,
-    LevelContainer,
     PlayerVisibleAreaMask,
     Renderer,
     Screen,
@@ -81,5 +93,6 @@ export function SetupPixiJS(MapSize) {
     Stage,
     UIDraw,
     UIStage,
+    VisibilityContainer,
   };
 }

@@ -49,6 +49,7 @@ const FLASHLIGHT_TEXTURE = 'flashlight';
 const ICON_FLASHLIGHT_TEXTURE = 'icon-flashlight';
 const ICON_HEALTH_TEXTURE = 'health';
 const CIRCULAR_GRADIENT_TEXTURE = 'circular-gradient';
+const DRONE = 'drone';
 
 Assets.Textures = [
   AIM_TEXTURE,
@@ -57,6 +58,7 @@ Assets.Textures = [
   ICON_FLASHLIGHT_TEXTURE,
   ICON_HEALTH_TEXTURE,
   CIRCULAR_GRADIENT_TEXTURE,
+  DRONE,
 ];
 
 const SPRITE_TYPES = {
@@ -143,7 +145,17 @@ Assets.Sprites = [
       { name: 'anchor', value: [0.5, 0.5] },
       { name: 'width', value: 300 },
       { name: 'height', value: 300 },
-      // { name: 'alpha', value: 0.4 },
+    ],
+  },
+  {
+    name: 'droneSprite',
+    type: SPRITE_TYPES.SPRITE,
+    texture: DRONE,
+    props: [
+      { name: 'anchor', value: [0.5, 0.5] },
+      { name: 'width', value: 50 },
+      { name: 'height', value: 50 },
+      { name: 'alpha', value: 1 },
     ],
   },
 ];
