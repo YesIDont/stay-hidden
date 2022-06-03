@@ -39,10 +39,10 @@ function Run() {
   //   wallsThickness: 32,
   // });
   const level = new Level({
-    columns: 4,
-    rows: 4,
-    tileSize: 128,
-    wallsThickness: 16,
+    columns: 2,
+    rows: 2,
+    tileSize: 256,
+    wallsThickness: 32,
   });
   // const level = new Level({
   //   columns: 1,
@@ -53,9 +53,9 @@ function Run() {
 
   const mapSize = level.GetSize();
   const player = new Player({
-    x: 64 + 128 * 0,
-    y: 64 + 128 * 0,
-    size: 5,
+    x: level.GetWorldPositionAtTileAddress(0),
+    y: level.GetWorldPositionAtTileAddress(0),
+    size: 10,
     maxSpeed: 80,
     sightMaxDistance: 600,
   });
@@ -84,6 +84,7 @@ function Run() {
   PlayerVisibleAreaMask.lineStyle(0);
 
   function AssetsPostLoadActions(loader, resources) {
+    const Sprites = Assets.GetSprites(resources);
     const {
       aimSightSprite,
       floorSprite,
@@ -93,7 +94,7 @@ function Run() {
       iconHealthLostRed,
       iconHealth,
       droneSprite,
-    } = Assets.GetSprites(resources);
+    } = Sprites;
 
     Mouse.attach(aimSightSprite);
 
@@ -135,16 +136,35 @@ function Run() {
 
     facilityAmbient.volume(1);
 
-    const maze = GenerateMaze(ECollisions, level);
+    const maze = GenerateMaze(ECollisions, level, true);
     const monster = new Monster({
-      x: 64 + 128 * 3,
-      y: 64 + 128 * 3,
+      x: level.GetWorldPositionAtTileAddress(1),
+      y: level.GetWorldPositionAtTileAddress(1),
       size: 10,
       gridProps: maze.pathfindingData,
       player,
     });
     droneSprite.x = monster.x;
     droneSprite.y = monster.y;
+    monster.target = player;
+
+    const gunBlastSprites = [];
+    for (let i = 0; i < monster.magazineSize; i++) {
+      const sprite = Sprites[`gunBlastSprite${i + 1}`];
+      sprite.visible = false;
+      gunBlastSprites.push(sprite);
+      VisibilityContainer.addChild(sprite);
+    }
+
+    const circularGradientSprites = [];
+    for (let i = 0; i < monster.magazineSize; i++) {
+      const sprite = Sprites[`circularGradientSprite${i + 1}`];
+      sprite.visible = false;
+      sprite.width = 150;
+      sprite.height = 150;
+      circularGradientSprites.push(sprite);
+    }
+    console.log(circularGradientSprites);
 
     let lastUpdateTime = new Date().getTime();
     let potentials = null;
@@ -167,6 +187,7 @@ function Run() {
       const { velocity, friction, halfFOV } = player;
       const currentTime = new Date().getTime();
       const timeDelta = (currentTime - lastUpdateTime) / 1000;
+      const mouseWorldPosition = Mouse.getMouseWorldPosition(LevelContainer);
       lastUpdateTime = currentTime;
 
       // INPUT & MOVEMENT
@@ -224,15 +245,14 @@ function Run() {
       velocity.y *= friction;
       if (velocity.y < 0.01 && velocity.y > -0.01) velocity.y = 0;
 
-      monster.solveAILogic(timeDelta, level.tileSize);
-      const targetAngle = Math.atan2(monster.direction.y, monster.direction.x) + Math.PI * 0.5;
-
-      droneSprite.rotation = utils.interpolateRadians(droneSprite.rotation, targetAngle, timeDelta);
-
       // SOLVE COLLISIONS
       //////////////////////////////////////////////////////////////////////
 
       ECollisions.update();
+
+      monster.update(timeDelta, level.tileSize, Result);
+      const targetAngle = Math.atan2(monster.lookDirection.y, monster.lookDirection.x) + Math.PI * 0.5;
+      droneSprite.rotation = utils.interpolateRadians(droneSprite.rotation, targetAngle, timeDelta);
 
       // solve player's collisions
       player.solveCollisions(Result);
@@ -242,7 +262,7 @@ function Run() {
       potentials = player.FOVarea.potentials();
       const obstaclesWithinSight = [];
       for (const body of potentials) {
-        if (body.tags && body.tags.includes('obstacle') && player.FOVarea.collides(body, Result)) {
+        if (body.hasTags('obstacle') && player.FOVarea.collides(body, Result)) {
           obstaclesWithinSight.push(body);
         }
       }
@@ -313,25 +333,40 @@ function Run() {
       HighlightsChangel.clear();
       HealthMask.clear();
       UIDraw.clear();
+      if (flashlightSprite.visible) Renderer.render(flashlightSprite, LightsTexture);
 
-      // LightsTexture.render(flashlightSprite);
-      Renderer.render(flashlightSprite, LightsTexture);
+      monster.bullets.forEach((bullet, index) => {
+        let sprite = gunBlastSprites[index];
+        if (sprite) {
+          sprite.visible = bullet.fired;
+          sprite.x = bullet.x;
+          sprite.y = bullet.y;
+          sprite.rotation = Math.atan2(bullet.yDirection, bullet.xDirection) - Math.PI * 0.5;
+        }
+        let lightSprite = circularGradientSprites[index];
+        if (lightSprite) {
+          lightSprite.visible = bullet.fired;
+          lightSprite.x = bullet.x;
+          lightSprite.y = bullet.y;
+          Renderer.render(lightSprite, LightsTexture, index === 0 && !flashlightSprite.visible);
+        }
+      });
 
       // Draw mask of the area that's visible for the player
-      if (flashlightSprite.visible) {
-        const visiblePolygons = [];
-        VisibleAreaPoly = GetFOVpolygon(player, obstaclesWithinSight, visiblePolygons);
-        if (VisibleAreaPoly.length > 0) {
-          // PlayerVisibleAreaMask.blendMode = PIXI.BLEND_MODES.DIFFERENCE;
-          PlayerVisibleAreaMask.beginFill(0xff0000);
-          PlayerVisibleAreaMask.moveTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
-          for (let i = 1; i < VisibleAreaPoly.length; i++) {
-            PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[i].x, VisibleAreaPoly[i].y);
-          }
-          PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
-          PlayerVisibleAreaMask.endFill();
+      // if (flashlightSprite.visible) {
+      const visiblePolygons = [];
+      VisibleAreaPoly = GetFOVpolygon(player, obstaclesWithinSight, visiblePolygons);
+      if (VisibleAreaPoly.length > 0) {
+        // PlayerVisibleAreaMask.blendMode = PIXI.BLEND_MODES.DIFFERENCE;
+        PlayerVisibleAreaMask.beginFill(0xff0000);
+        PlayerVisibleAreaMask.moveTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
+        for (let i = 1; i < VisibleAreaPoly.length; i++) {
+          PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[i].x, VisibleAreaPoly[i].y);
         }
+        PlayerVisibleAreaMask.lineTo(VisibleAreaPoly[0].x, VisibleAreaPoly[0].y);
+        PlayerVisibleAreaMask.endFill();
       }
+      // }
 
       // UI
       //////////////////////////////////////////////////////////////////////
@@ -409,7 +444,6 @@ function Run() {
         fillCircle(DebugDraw, monster, monster.radius, 0xff0000);
 
         // Draw FOV
-        const mouseWorldPosition = Mouse.getMouseWorldPosition(LevelContainer);
         let playerToMouseVector = {
           x: mouseWorldPosition.x - player.x,
           y: mouseWorldPosition.y - player.y,

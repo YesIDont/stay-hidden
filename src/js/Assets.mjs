@@ -50,6 +50,7 @@ const ICON_FLASHLIGHT_TEXTURE = 'icon-flashlight';
 const ICON_HEALTH_TEXTURE = 'health';
 const CIRCULAR_GRADIENT_TEXTURE = 'circular-gradient';
 const DRONE = 'drone';
+const BLAST = 'blast';
 
 Assets.Textures = [
   AIM_TEXTURE,
@@ -59,6 +60,7 @@ Assets.Textures = [
   ICON_HEALTH_TEXTURE,
   CIRCULAR_GRADIENT_TEXTURE,
   DRONE,
+  BLAST,
 ];
 
 const SPRITE_TYPES = {
@@ -75,6 +77,7 @@ Assets.Sprites = [
       { name: 'anchor', value: [0.5, 0.5] },
       { name: 'width', value: 24 },
       { name: 'height', value: 24 },
+      { name: 'zIndex', value: 100 },
     ],
   },
   {
@@ -85,6 +88,7 @@ Assets.Sprites = [
       { name: 'width', value: 2000 },
       { name: 'height', value: 2000 },
       { name: 'tileSize', value: [64, 64] },
+      { name: 'zIndex', value: 1 },
     ],
   },
   {
@@ -145,6 +149,8 @@ Assets.Sprites = [
       { name: 'anchor', value: [0.5, 0.5] },
       { name: 'width', value: 300 },
       { name: 'height', value: 300 },
+      { name: 'count', value: 20 },
+      { name: 'alpha', value: 0.4 },
     ],
   },
   {
@@ -155,7 +161,19 @@ Assets.Sprites = [
       { name: 'anchor', value: [0.5, 0.5] },
       { name: 'width', value: 50 },
       { name: 'height', value: 50 },
-      { name: 'alpha', value: 1 },
+      { name: 'zIndex', value: 2 },
+    ],
+  },
+  {
+    name: 'gunBlastSprite',
+    type: SPRITE_TYPES.SPRITE,
+    texture: BLAST,
+    props: [
+      { name: 'anchor', value: [0.5, 0.5] },
+      { name: 'width', value: 4 },
+      { name: 'height', value: 45 },
+      { name: 'count', value: 20 },
+      { name: 'zIndex', value: 1 },
     ],
   },
 ];
@@ -165,29 +183,42 @@ Assets.GetSprites = function (loadedResources) {
 
   for (const Asset of Assets.Sprites) {
     let props = {};
-    Asset.props.forEach((prop) => {
-      props[prop.name] = prop.value;
-    });
-
-    let newSprite = {};
-
-    if (Asset.type === SPRITE_TYPES.TILING_SPRITE) {
-      let { tileSize, ...propsTemp } = props;
-      newSprite = new PIXI[Asset.type](loadedResources[Asset.texture].texture, tileSize[0], tileSize[1]);
-      props = propsTemp;
-    } else {
-      newSprite = new PIXI[Asset.type](loadedResources[Asset.texture].texture);
-    }
-
-    Asset.props.forEach((prop) => {
-      if (prop.name === 'anchor') {
-        newSprite.anchor.set(prop.value[0], prop.value[1]);
-      } else {
-        newSprite[prop.name] = prop.value;
+    let count = 1;
+    Asset.props.forEach(({ name, value }) => {
+      if (name === 'count') {
+        count = value;
+        return;
       }
+      props[name] = value;
     });
 
-    Sprites[Asset.name] = newSprite;
+    for (let i = 0; i < count; i++) {
+      let newSprite = {};
+
+      if (Asset.type === SPRITE_TYPES.TILING_SPRITE) {
+        let { tileSize, ...propsTemp } = props;
+        newSprite = new PIXI[Asset.type](loadedResources[Asset.texture].texture, tileSize[0], tileSize[1]);
+        props = propsTemp;
+      } else {
+        newSprite = new PIXI[Asset.type](loadedResources[Asset.texture].texture);
+      }
+
+      Asset.props.forEach(({ name, value }) => {
+        /* eslint-disable indent */
+        switch (name) {
+          case 'anchor':
+            newSprite.anchor.set(value[0], value[1]);
+            break;
+
+          default:
+            newSprite[name] = value;
+            break;
+        }
+        /* eslint-enable indent */
+      });
+
+      Sprites[`${Asset.name}${count > 1 ? i + 1 : ''}`] = newSprite;
+    }
   }
 
   return Sprites;

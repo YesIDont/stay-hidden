@@ -225,7 +225,7 @@ function generateChessboardBasedMaze(mapSettings) {
     if (nextCell) {
       // clear walls between both cells and randomly open one of walls
       // const shouldOpenRandomWall = flipCoin();
-      currentCell.clearWallsWith(nextCell, true /* shouldOpenRandomWall */);
+      currentCell.clearWallsWith(nextCell, true);
 
       // add cell to the stack
       stack.push(nextCell);
@@ -457,8 +457,20 @@ function mapMazeCellsToPathfindingData(cells) {
   );
 }
 
-export function GenerateMaze(collisions, mapSettings) {
-  const cells = generateChessboardBasedMaze(mapSettings);
+export function GenerateMaze(collisions, mapSettings, emptyLevel = false) {
+  let cells = generateChessboardBasedMaze(mapSettings);
+
+  if (emptyLevel) {
+    cells = cells.map((row) =>
+      row.map((cell) => {
+        cell.walls.forEach((wall) => {
+          wall.isClosed = wall.isMazeBoundary;
+        });
+        return cell;
+      }),
+    );
+  }
+
   const cellsAsWalls = filterRepeatingWallsCells(cells);
   const horizontalMerged = filterAndMergeHorizontalWallsCells(cellsAsWalls);
   const verticalMerged = filterAndMergeVerticalWallsCells(cellsAsWalls);

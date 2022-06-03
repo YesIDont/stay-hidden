@@ -49,6 +49,7 @@ export function SetupPixiJS(MapSize) {
   VisibilityContainer.addChild(LightsSprite);
   LevelContainer.addChild(VisibilityContainer);
   VisibilityContainer.zIndex = 10;
+  VisibilityContainer.sortableChildren = true;
   VisibilityContainer.width = MapSize.width;
   VisibilityContainer.height = MapSize.height;
 

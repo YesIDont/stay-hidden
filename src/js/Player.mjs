@@ -3,22 +3,22 @@ import { ECollisions } from './ECollisions.mjs';
 import { Vector } from './Vector2D.mjs';
 
 export const Player = function ({ x, y, size, maxSpeed, sightMaxDistance, FOV = 130 }) {
-  let player = ECollisions.createCircle(x, y, size);
-  player.maxHealth = 10;
-  player.currentHealth = player.maxHealth * 0.6;
-  player.FOVarea = ECollisions.createCircle(x, y, 1200);
-  player.FOV = FOV;
-  player.halfFOV = FOV * 0.5;
-  player.velocity = new Vector();
-  player.walkSpeed = maxSpeed;
-  player.sprintSpeed = maxSpeed * 2;
-  player.friction = 0.9;
-  player.sightMaxDistance = sightMaxDistance;
-  player.isSprinting = false;
-  player.stamina = 1;
-  player.tags = ['player'];
+  const p = ECollisions.createCircle(x, y, size);
+  p.maxHealth = 10;
+  p.currentHealth = p.maxHealth;
+  p.FOVarea = ECollisions.createCircle(x, y, 1200);
+  p.FOV = FOV;
+  p.halfFOV = FOV * 0.5;
+  p.velocity = new Vector();
+  p.walkSpeed = maxSpeed;
+  p.sprintSpeed = maxSpeed * 2;
+  p.friction = 0.9;
+  p.sightMaxDistance = sightMaxDistance;
+  p.isSprinting = false;
+  p.stamina = 1;
+  p.tags = ['player'];
 
-  player.solveCollisions = function (Result) {
+  p.solveCollisions = function (Result) {
     const potentials = this.potentials();
     for (const body of potentials) {
       if (body.hasTags('obstacle') && this.collides(body, Result)) {
@@ -27,9 +27,9 @@ export const Player = function ({ x, y, size, maxSpeed, sightMaxDistance, FOV = 
     }
   };
 
-  player.getDamage = function (damageAmount) {
+  p.receiveDamage = function (damageAmount) {
     this.currentHealth -= damageAmount;
   };
 
-  return player;
+  return p;
 };

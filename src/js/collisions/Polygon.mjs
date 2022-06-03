@@ -65,22 +65,14 @@ export class Polygon extends Body {
 
   calculateSegments() {
     const coords = this.getCoords();
-    const points = [];
+    const { length } = coords;
 
-    points.push([coords[0], coords[1]]);
-
-    for (let i = 2; i < coords.length; i += 2) {
-      points.push([coords[i], coords[i + 1]]);
+    if (length % 4 === 0) {
+      for (let i = 2; i < length; i += 2) {
+        this._segments.push([coords[i - 2], coords[i - 1], coords[i], coords[i + 1]]);
+      }
+      this._segments.push([coords[length - 2], coords[length - 1], coords[0], coords[1]]);
     }
-
-    if (coords.length > 4) {
-      points.push([coords[0], coords[1]]);
-    }
-
-    for (let i = 1; i < points.length; i++) {
-      this._segments.push([points[i - 1], points[i]]);
-    }
-    this._segments.push([points[points.length - 1], points[0]]);
   }
 
   getSegments() {

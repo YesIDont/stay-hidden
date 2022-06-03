@@ -20,6 +20,13 @@ export function randomInRange(min = 0, max = 1) {
   return Math.random() * (max - min) + min;
 }
 
+export const getDistanceFromAtoB = (ax, ay, bx, by) => {
+  const xDiff = bx - ax;
+  const yDiff = by - ay;
+
+  return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+};
+
 export function getRotatedVector(vector, angle, pivotPoint) {
   if (angle === 0) {
     return { x, y };
@@ -44,7 +51,7 @@ export const normalizeRadians = (radians) => {
   return radians;
 };
 
-export const interpolateRadians = (current, target, deltaTime, speed = 4) => {
+export const interpolateRadians = (current, target, deltaTime, speed = 50) => {
   const diff = normalizeRadians(target - current);
   const dffAbs = Math.abs(diff);
   if (dffAbs < 0.05) return target;
