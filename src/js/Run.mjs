@@ -39,8 +39,8 @@ function Run() {
   //   wallsThickness: 32,
   // });
   const level = new Level({
-    columns: 4,
-    rows: 4,
+    columns: 8,
+    rows: 8,
     tileSize: 180,
     wallsThickness: 32,
   });
@@ -139,8 +139,8 @@ function Run() {
 
     const maze = GenerateMaze(ECollisions, level, false);
     const monster = new Monster({
-      x: level.GetWorldPositionAtTileAddress(1),
-      y: level.GetWorldPositionAtTileAddress(1),
+      x: level.GetWorldPositionAtTileAddress(level.rows - 1),
+      y: level.GetWorldPositionAtTileAddress(level.columns - 1),
       size: 10,
       gridProps: maze.pathfindingData,
       player,
@@ -299,20 +299,7 @@ function Run() {
       // droneSprite.alpha *= 50;
 
       if (flashlightSprite.visible) {
-        if (flashlight.flickerCounter < flashlight.nextFlickerIn && flashlight.intensity === flashlight.maxIntensity) {
-          flashlight.flickerCounter += timeDelta;
-        } else {
-          flashlight.intensity = clamp(
-            Math.sin(flashlight.flickerOffset),
-            flashlight.maxIntensity * 0.7,
-            flashlight.maxIntensity,
-          );
-          flashlight.flickerOffset += randomInRange(-0.5, 0.5);
-          flashlight.nextFlickerIn = randomInRange(0, 25) * timeDelta;
-          flashlight.flickerCounter = 0;
-        }
-
-        flashlightSprite.alpha = flashlight.intensity;
+        flashlightSprite.alpha = flashlight.flickerEffect.update(timeDelta);
       }
 
       footstepsSound.volume(mapValueInRangeClamped(velocityLength, 0, player.sprintSpeed));

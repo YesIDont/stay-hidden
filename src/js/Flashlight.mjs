@@ -1,11 +1,8 @@
 'use strict';
+import { newFlickerEffect } from './FlickerEffect.mjs';
 
 export const Flashlight = function (consumptionRate = 40, rechargeRate = 8) {
-  this.maxIntensity = 1;
-  this.intensity = this.lightMaxIntensity;
-  this.flickerOffset = 0;
-  this.nextFlickerIn = 0.5;
-  this.flickerCounter = 0;
+  this.flickerEffect = newFlickerEffect();
   this.juice = 1;
   // the bigger the number the slower consumption / regeneration, small numbers === faster
   this.consumptionRate = consumptionRate;
