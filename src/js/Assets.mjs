@@ -39,6 +39,24 @@ Assets.Sounds = [
       { name: 'volume', value: 1.5 },
     ],
   },
+  {
+    name: 'gunshot',
+    props: [
+      { name: 'src', value: 'assets/sounds/sound-gunshot.mp3' },
+      { name: 'autoplay', value: false },
+      { name: 'loop', value: false },
+      { name: 'volume', value: 0.9 },
+    ],
+  },
+  {
+    name: 'robotFoundTarget',
+    props: [
+      { name: 'src', value: 'assets/sounds/sound-robot-found-target.mp3' },
+      { name: 'autoplay', value: false },
+      { name: 'loop', value: false },
+      { name: 'volume', value: 1 },
+    ],
+  },
 ];
 
 // Below are names of the texture files, that all are placed in one directory
@@ -142,15 +160,14 @@ Assets.Sprites = [
     ],
   },
   {
-    name: 'circularGradientSprite',
+    name: 'gunBlastLightSprite',
     type: SPRITE_TYPES.SPRITE,
     texture: CIRCULAR_GRADIENT_TEXTURE,
     props: [
       { name: 'anchor', value: [0.5, 0.5] },
-      { name: 'width', value: 300 },
-      { name: 'height', value: 300 },
+      { name: 'width', value: 200 },
+      { name: 'height', value: 200 },
       { name: 'count', value: 20 },
-      { name: 'alpha', value: 0.4 },
     ],
   },
   {

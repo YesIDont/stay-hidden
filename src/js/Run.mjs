@@ -39,9 +39,9 @@ function Run() {
   //   wallsThickness: 32,
   // });
   const level = new Level({
-    columns: 2,
-    rows: 2,
-    tileSize: 256,
+    columns: 4,
+    rows: 4,
+    tileSize: 180,
     wallsThickness: 32,
   });
   // const level = new Level({
@@ -132,17 +132,19 @@ function Run() {
 
     UIStage.addChild(iconFlashlightUsedRed, iconFlashlight, iconHealthLostRed, iconHealth, aimSightSprite, DebugDraw);
 
-    const { facilityAmbient, footstepsSound, lightSwitchSound, batteryDeadSound } = Assets.GetSounds();
+    const sounds = Assets.GetSounds();
+    const { facilityAmbient, footstepsSound, lightSwitchSound, batteryDeadSound } = sounds;
 
     facilityAmbient.volume(1);
 
-    const maze = GenerateMaze(ECollisions, level, true);
+    const maze = GenerateMaze(ECollisions, level, false);
     const monster = new Monster({
       x: level.GetWorldPositionAtTileAddress(1),
       y: level.GetWorldPositionAtTileAddress(1),
       size: 10,
       gridProps: maze.pathfindingData,
       player,
+      sounds,
     });
     droneSprite.x = monster.x;
     droneSprite.y = monster.y;
@@ -156,15 +158,12 @@ function Run() {
       VisibilityContainer.addChild(sprite);
     }
 
-    const circularGradientSprites = [];
+    const gunBlastLightSprites = [];
     for (let i = 0; i < monster.magazineSize; i++) {
-      const sprite = Sprites[`circularGradientSprite${i + 1}`];
+      const sprite = Sprites[`gunBlastLightSprite${i + 1}`];
       sprite.visible = false;
-      sprite.width = 150;
-      sprite.height = 150;
-      circularGradientSprites.push(sprite);
+      gunBlastLightSprites.push(sprite);
     }
-    console.log(circularGradientSprites);
 
     let lastUpdateTime = new Date().getTime();
     let potentials = null;
@@ -339,13 +338,15 @@ function Run() {
         let sprite = gunBlastSprites[index];
         if (sprite) {
           sprite.visible = bullet.fired;
+          sprite.alpha = randomInRange(0.7, 1);
           sprite.x = bullet.x;
           sprite.y = bullet.y;
           sprite.rotation = Math.atan2(bullet.yDirection, bullet.xDirection) - Math.PI * 0.5;
         }
-        let lightSprite = circularGradientSprites[index];
+        let lightSprite = gunBlastLightSprites[index];
         if (lightSprite) {
           lightSprite.visible = bullet.fired;
+          lightSprite.alpha = randomInRange(0.05, 0.5);
           lightSprite.x = bullet.x;
           lightSprite.y = bullet.y;
           Renderer.render(lightSprite, LightsTexture, index === 0 && !flashlightSprite.visible);

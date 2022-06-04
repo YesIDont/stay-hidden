@@ -2,7 +2,7 @@
 import { ECollisions } from './ECollisions.mjs';
 import { AStarPathfinder } from './pathfinder/AStarPathfinder.mjs';
 import { GetClosestSegmentsIntersection } from './utils/GetClosestSegmentsIntersection.mjs';
-import { getDistanceFromAtoB } from './utils/utils.mjs';
+import { getDistanceFromAtoB, randomInRange } from './utils/utils.mjs';
 
 function spawnBullet(x, y, xDirection, yDirection, damage) {
   const b = ECollisions.createCircle(x, y, 2);
@@ -46,7 +46,7 @@ function spawnBullet(x, y, xDirection, yDirection, damage) {
   return b;
 }
 
-export const Monster = function ({ x, y, size, gridProps, player }) {
+export const Monster = function ({ x, y, size, gridProps, player, sounds }) {
   const m = ECollisions.createCircle(x, y, size);
   m.sightMaxDistance = 500;
   m.FOVarea = ECollisions.createCircle(x, y, m.sightMaxDistance);
@@ -61,7 +61,15 @@ export const Monster = function ({ x, y, size, gridProps, player }) {
   // array of points to follow
   m.scent = [];
   m.spriteAngle = 0;
+
   m.target = undefined;
+  m.targetInView = false;
+  m.canFireAtTarget = false;
+  m.firePermissionSwitch = () => {
+    m.canFireAtTarget = !m.canFireAtTarget;
+  };
+
+  sounds.robotFoundTarget.on('end', m.firePermissionSwitch);
 
   // cannon
   m.magazineSize = 20;
@@ -99,15 +107,20 @@ export const Monster = function ({ x, y, size, gridProps, player }) {
     FOVarea.y = y;
 
     const targetInViewRange = getDistanceFromAtoB(x, y, tx, ty) < m.sightMaxDistance;
-    if (targetInViewRange) {
-      const obstaclesGeometry = FOVarea.potentials()
-        .filter((o) => o._polygon)
-        .map((o) => o.getSegments())
-        .flat();
-      const segmentFromMeToTarget = [x, y, tx, ty];
-      const isTargetObscured = GetClosestSegmentsIntersection(segmentFromMeToTarget, obstaclesGeometry);
+    const obstaclesGeometry = FOVarea.potentials()
+      .filter((o) => o._polygon)
+      .map((o) => o.getSegments())
+      .flat();
+    const segmentFromMeToTarget = [x, y, tx, ty];
+    const isTargetObscured = GetClosestSegmentsIntersection(segmentFromMeToTarget, obstaclesGeometry);
+    const targetInView = targetInViewRange && !isTargetObscured;
 
-      if (!isTargetObscured) {
+    if (targetInView) {
+      if (!m.targetInView) {
+        sounds.robotFoundTarget.play();
+      }
+
+      if (m.canFireAtTarget) {
         const lx = tx - x;
         const ly = ty - y;
         const length = Math.sqrt(lx * lx + ly * ly);
@@ -126,6 +139,8 @@ export const Monster = function ({ x, y, size, gridProps, player }) {
             } else {
               bullet.fire(x, y, m.lookDirection.x, m.lookDirection.y);
             }
+            sounds.gunshot.volume(randomInRange(0.5, 1));
+            sounds.gunshot.play();
           }
         } else {
           setTimeout(() => {
@@ -135,6 +150,9 @@ export const Monster = function ({ x, y, size, gridProps, player }) {
         }
       }
     }
+
+    m.targetInView = targetInView;
+    if (!targetInView) m.canFireAtTarget = false;
 
     m.bullets.forEach((b) => {
       if (b.fired) {
