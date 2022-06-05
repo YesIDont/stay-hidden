@@ -200,8 +200,8 @@ Assets.Sprites = [
     texture: DRONE,
     props: [
       { name: 'anchor', value: [0.5, 0.5] },
-      { name: 'width', value: 50 },
-      { name: 'height', value: 50 },
+      { name: 'width', value: 100 },
+      { name: 'height', value: 100 },
       { name: 'zIndex', value: 2 },
     ],
   },

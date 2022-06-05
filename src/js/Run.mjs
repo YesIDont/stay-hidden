@@ -182,7 +182,7 @@ function Run() {
     const monster = new Monster({
       x: level.GetWorldPositionAtTileAddress(level.rows - 1),
       y: level.GetWorldPositionAtTileAddress(level.columns - 1),
-      size: 10,
+      size: 35,
       gridProps: maze.pathfindingData,
       player,
       sounds,
