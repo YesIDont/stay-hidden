@@ -61,10 +61,11 @@ Assets.Sounds = [
 
 // Below are names of the texture files, that all are placed in one directory
 // All textures are and should be of png file type
+export const PLAYER_TEXTURE = 'player';
 export const BLACK_PIXEL_TEXTURE = 'black-pixel';
 export const AIM_TEXTURE = 'aim';
 export const FLOOR_TILE_TEXTURE = 'floor-tile';
-export const FLASHLIGHT_TEXTURE = 'flashlight';
+export const FLASHLIGHT_TEXTURE = 'flashlight-thin';
 export const ICON_FLASHLIGHT_TEXTURE = 'icon-flashlight';
 export const ICON_HEALTH_TEXTURE = 'health';
 export const CIRCULAR_GRADIENT_TEXTURE = 'circular-gradient';
@@ -72,6 +73,7 @@ export const DRONE = 'drone';
 export const BLAST = 'blast';
 
 Assets.Textures = [
+  PLAYER_TEXTURE,
   BLACK_PIXEL_TEXTURE,
   AIM_TEXTURE,
   FLOOR_TILE_TEXTURE,
@@ -89,6 +91,16 @@ const SPRITE_TYPES = {
 };
 
 Assets.Sprites = [
+  {
+    name: 'playerSprite',
+    type: SPRITE_TYPES.SPRITE,
+    texture: PLAYER_TEXTURE,
+    props: [
+      { name: 'anchor', value: [0.3, 0.5] },
+      { name: 'width', value: 90 },
+      { name: 'height', value: 63 },
+    ],
+  },
   {
     name: 'blackPixel',
     type: SPRITE_TYPES.SPRITE,

@@ -42,7 +42,7 @@ function Run() {
   const level = new Level({
     columns: 8,
     rows: 8,
-    tileSize: 180,
+    tileSize: 220,
     wallsThickness: 32,
   });
   // const level = new Level({
@@ -56,11 +56,11 @@ function Run() {
   const player = new Player({
     x: level.GetWorldPositionAtTileAddress(0),
     y: level.GetWorldPositionAtTileAddress(0),
-    size: 10,
+    size: 25,
     maxSpeed: 80,
     sightMaxDistance: 600,
   });
-  const flashlight = new Flashlight(20, 10);
+  const flashlight = new Flashlight(50, 10);
   const UiPadding = 30;
   let VisibleAreaPoly = {};
 
@@ -87,6 +87,7 @@ function Run() {
   function AssetsPostLoadActions(loader, resources) {
     const Sprites = Assets.GetSprites(resources);
     const {
+      playerSprite,
       blackPixel,
       aimSightSprite,
       floorSprite,
@@ -99,6 +100,8 @@ function Run() {
     } = Sprites;
 
     Mouse.attach(aimSightSprite);
+
+    playerSprite.zIndex = 1;
 
     flashlightSprite.x = player.x;
     flashlightSprite.y = player.y;
@@ -124,6 +127,7 @@ function Run() {
     VisibilityContainer.addChild(
       PlayerVisibleAreaMask,
       floorSprite,
+      playerSprite,
       droneSprite,
       // HighlightsChangel,
       Draw,
@@ -148,13 +152,13 @@ function Run() {
             resources,
             a.x + (Math.max(a.x, b.x) - Math.min(a.x, b.x)) * 0.5,
             a.y + (Math.max(a.y, b.y) - Math.min(a.y, b.y)) * 0.5,
-            120,
-            120,
-            0.2,
+            140,
+            140,
+            0.25,
           ),
         ]);
 
-        if (randomInRange() > 0.85) {
+        if (randomInRange() > 0.5) {
           lights.push(
             newLightSource(
               resources,
@@ -169,7 +173,9 @@ function Run() {
 
         return lights;
       })
-      .flat(2);
+      .flat(2)
+      // remove duplicated lights
+      .reduce((acc, curr) => (!acc.find((i) => i.x === curr.x && i.y === curr.y) ? [curr, ...acc] : acc), []);
 
     console.log(corridorsLights.length);
 
@@ -304,6 +310,17 @@ function Run() {
       // STATE UDPATES
       //////////////////////////////////////////////////////////////////////
 
+      playerSprite.x = player.x;
+      playerSprite.y = player.y;
+      const angle = Mouse.getMouseToPointAngle({
+        x: LevelContainer.x + player.x,
+        y: LevelContainer.y + player.y,
+      });
+      playerSprite.rotation = angle - Math.PI * 0.5;
+      flashlightSprite.rotation = angle;
+      flashlightSprite.x = playerSprite.x + Math.cos(angle - Math.PI * 0.5) * 60;
+      flashlightSprite.y = playerSprite.y + Math.sin(angle - Math.PI * 0.5) * 60;
+
       if (player.currentHealth <= 0) {
         youDiedScreen.style.display = 'flex';
         Graphics.stop();
@@ -323,11 +340,6 @@ function Run() {
           batteryDeadSound.play();
         }
       }
-
-      flashlightSprite.rotation = Mouse.getMouseToPointAngle({
-        x: LevelContainer.x + player.x,
-        y: LevelContainer.y + player.y,
-      });
 
       droneSprite.x = monster.x;
       droneSprite.y = monster.y;
