@@ -1,6 +1,6 @@
 import { clamp, randomInRange } from './utils/Utils.mjs';
 
-export function newFlickerEffect(max = 1) {
+export function newFlickerEffect(max = 1, maxGap = 25) {
   const f = {};
 
   f.max = max;
@@ -15,7 +15,7 @@ export function newFlickerEffect(max = 1) {
     } else {
       f.current = clamp(Math.sin(f.flickerOffset), f.max * 0.7, f.max);
       f.flickerOffset += randomInRange(-0.5, 0.5);
-      f.nextFlickerIn = randomInRange(0, 25) * timeDelta;
+      f.nextFlickerIn = randomInRange(0, maxGap) * timeDelta;
       f.flickerCounter = 0;
     }
 

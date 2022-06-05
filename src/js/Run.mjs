@@ -5,8 +5,9 @@ import { ECollisions } from './ECollisions.mjs';
 import { Flashlight } from './Flashlight.mjs';
 import { FpsDisplay } from './FpsDisplay.mjs';
 import { Keys, KeysBindings } from './Keys.mjs';
+import { newLightSource } from './LightSource.mjs';
 import { Level } from './Map.mjs';
-import { GenerateMaze } from './Maze.mjs';
+import { newMaze } from './Maze.mjs';
 import { Monster } from './Monster.mjs';
 import { Mouse } from './Mouse.mjs';
 import { Player } from './Player.mjs';
@@ -115,10 +116,10 @@ function Run() {
 
     iconFlashlight.mask = FlashlightIconMask;
 
-    const whiteBackgroundSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
-    whiteBackgroundSprite.width = mapSize.width;
-    whiteBackgroundSprite.height = mapSize.height;
-    whiteBackgroundSprite.tint = 0xffffff;
+    // const whiteBackgroundSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
+    // whiteBackgroundSprite.width = mapSize.width;
+    // whiteBackgroundSprite.height = mapSize.height;
+    // whiteBackgroundSprite.tint = 0xffffff;
 
     VisibilityContainer.addChild(
       PlayerVisibleAreaMask,
@@ -138,7 +139,40 @@ function Run() {
 
     facilityAmbient.volume(1);
 
-    const maze = GenerateMaze(ECollisions, level, false);
+    const maze = newMaze(ECollisions, level, false);
+    const corridorsLights = maze.pathfindingData
+      .map((cell) => {
+        const lights = cell.walls.map(({ a, b }) => [
+          newLightSource(resources, a.x, a.y, 150, 150, 0.15),
+          newLightSource(
+            resources,
+            a.x + (Math.max(a.x, b.x) - Math.min(a.x, b.x)) * 0.5,
+            a.y + (Math.max(a.y, b.y) - Math.min(a.y, b.y)) * 0.5,
+            120,
+            120,
+            0.2,
+          ),
+        ]);
+
+        if (randomInRange() > 0.85) {
+          lights.push(
+            newLightSource(
+              resources,
+              level.GetWorldPositionAtTileAddress(cell.x),
+              level.GetWorldPositionAtTileAddress(cell.y),
+              250,
+              250,
+              0.15,
+            ),
+          );
+        }
+
+        return lights;
+      })
+      .flat(2);
+
+    console.log(corridorsLights.length);
+
     const monster = new Monster({
       x: level.GetWorldPositionAtTileAddress(level.rows - 1),
       y: level.GetWorldPositionAtTileAddress(level.columns - 1),
@@ -309,7 +343,7 @@ function Run() {
       // DRAW
       //////////////////////////////////////////////////////////////////////
 
-      whiteBackgroundSprite.visible = debugDrawSwitch.checked;
+      // whiteBackgroundSprite.visible = debugDrawSwitch.checked;
       Draw.visible = !debugDrawSwitch.checked;
 
       DebugDraw.clear();
@@ -322,9 +356,15 @@ function Run() {
       UIDraw.clear();
 
       // Lights
-
+      // ! filter out lights that are not on the screen
       Renderer.render(blackPixel, LightsTexture);
-      if (flashlightSprite.visible) Renderer.render(flashlightSprite, LightsTexture, true);
+
+      if (flashlightSprite.visible) Renderer.render(flashlightSprite, LightsTexture, false);
+
+      corridorsLights.forEach((light) => {
+        light.update(timeDelta);
+        Renderer.render(light, LightsTexture, false);
+      });
 
       monster.bullets.forEach((bullet, index) => {
         let sprite = gunBlastSprites[index];
@@ -341,7 +381,7 @@ function Run() {
           lightSprite.alpha = randomInRange(0.05, 0.5);
           lightSprite.x = bullet.x;
           lightSprite.y = bullet.y;
-          Renderer.render(lightSprite, LightsTexture, true);
+          Renderer.render(lightSprite, LightsTexture, false);
         }
       });
 

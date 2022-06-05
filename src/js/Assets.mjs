@@ -61,15 +61,15 @@ Assets.Sounds = [
 
 // Below are names of the texture files, that all are placed in one directory
 // All textures are and should be of png file type
-const BLACK_PIXEL_TEXTURE = 'black-pixel';
-const AIM_TEXTURE = 'aim';
-const FLOOR_TILE_TEXTURE = 'floor-tile';
-const FLASHLIGHT_TEXTURE = 'flashlight';
-const ICON_FLASHLIGHT_TEXTURE = 'icon-flashlight';
-const ICON_HEALTH_TEXTURE = 'health';
-const CIRCULAR_GRADIENT_TEXTURE = 'circular-gradient';
-const DRONE = 'drone';
-const BLAST = 'blast';
+export const BLACK_PIXEL_TEXTURE = 'black-pixel';
+export const AIM_TEXTURE = 'aim';
+export const FLOOR_TILE_TEXTURE = 'floor-tile';
+export const FLASHLIGHT_TEXTURE = 'flashlight';
+export const ICON_FLASHLIGHT_TEXTURE = 'icon-flashlight';
+export const ICON_HEALTH_TEXTURE = 'health';
+export const CIRCULAR_GRADIENT_TEXTURE = 'circular-gradient';
+export const DRONE = 'drone';
+export const BLAST = 'blast';
 
 Assets.Textures = [
   BLACK_PIXEL_TEXTURE,

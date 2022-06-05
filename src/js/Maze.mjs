@@ -409,17 +409,20 @@ function mapMazeCellsToPathfindingData(cells) {
   let index = 0;
 
   const data = cells.map((row) =>
-    row.map((cell) => ({
-      id: index++,
-      x: cell.address.x,
-      y: cell.address.y,
-      gCost: null,
-      hCost: null,
-      fCost: null,
-      wasVisisted: false,
-      parent: null,
-      heapIndex: null,
-    })),
+    row.map((cell) => {
+      return {
+        id: index++,
+        x: cell.address.x,
+        y: cell.address.y,
+        gCost: null,
+        hCost: null,
+        fCost: null,
+        wasVisisted: false,
+        parent: null,
+        heapIndex: null,
+        walls: cell.walls.filter((w) => w.isClosed).map(({ a, b }) => ({ a, b })),
+      };
+    }),
   );
 
   const neighbourAddressCoords = [
@@ -435,29 +438,31 @@ function mapMazeCellsToPathfindingData(cells) {
     // [-1, 1],
   ];
 
-  return data.map((row) =>
-    row.map((dataItem) => {
-      const parentCell = cells[dataItem.x] && cells[dataItem.x][dataItem.y];
+  return data
+    .map((row) =>
+      row.map((dataItem) => {
+        const parentCell = cells[dataItem.x] && cells[dataItem.x][dataItem.y];
 
-      const neighbours = neighbourAddressCoords
-        .map(([x, y]) => {
-          const row = dataItem.x + x;
-          const column = dataItem.y + y;
-          const neighbour = data[row] && data[row][column];
-          const cell = cells[row] && cells[row][column];
+        const neighbours = neighbourAddressCoords
+          .map(([x, y]) => {
+            const row = dataItem.x + x;
+            const column = dataItem.y + y;
+            const neighbour = data[row] && data[row][column];
+            const cell = cells[row] && cells[row][column];
 
-          return { neighbour, cell };
-        })
-        .filter((n) => n && n.cell && hasOpenWallsWith(parentCell, n.cell))
-        .map(({ neighbour }) => neighbour);
+            return { neighbour, cell };
+          })
+          .filter((n) => n && n.cell && hasOpenWallsWith(parentCell, n.cell))
+          .map(({ neighbour }) => neighbour);
 
-      dataItem.neighbours = neighbours;
-      return dataItem;
-    }),
-  );
+        dataItem.neighbours = neighbours;
+        return dataItem;
+      }),
+    )
+    .flat();
 }
 
-export function GenerateMaze(collisions, mapSettings, emptyLevel = false) {
+export function newMaze(collisions, mapSettings, emptyLevel = false) {
   let cells = generateChessboardBasedMaze(mapSettings);
 
   if (emptyLevel) {

@@ -16,19 +16,16 @@ export class Grid {
   getCellUnderPointer(x, y, cellSize) {
     const row = Math.floor(y / cellSize);
     const column = Math.floor(x / cellSize);
-    const cell = this.nodes[column] && this.nodes[column][row];
 
-    return cell;
+    return this.nodes.find((n) => n.x === column && n.y === row);
   }
 
   reset() {
-    this.nodes.forEach((row) => {
-      row.forEach((node) => {
-        node.wasVisisted = false;
-        node.gCost = null;
-        node.hCost = null;
-        node.fCost = null;
-      });
+    this.nodes.forEach((node) => {
+      node.wasVisisted = false;
+      node.gCost = null;
+      node.hCost = null;
+      node.fCost = null;
     });
   }
 }
