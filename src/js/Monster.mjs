@@ -48,7 +48,7 @@ function spawnBullet(x, y, xDirection, yDirection, damage) {
 
 export const Monster = function ({ x, y, size, gridProps, player, sounds }) {
   const m = ECollisions.createCircle(x, y, size);
-  m.sightMaxDistance = 500;
+  m.sightMaxDistance = 1500;
   m.FOVarea = ECollisions.createCircle(x, y, m.sightMaxDistance);
   m.speed = 40;
   m.damage = 2;

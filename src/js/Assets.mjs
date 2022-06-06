@@ -97,8 +97,8 @@ Assets.Sprites = [
     texture: PLAYER_TEXTURE,
     props: [
       { name: 'anchor', value: [0.3, 0.5] },
-      { name: 'width', value: 90 },
-      { name: 'height', value: 63 },
+      { name: 'width', value: 70 },
+      { name: 'height', value: 49 },
     ],
   },
   {

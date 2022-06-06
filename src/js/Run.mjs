@@ -152,9 +152,9 @@ function Run() {
             resources,
             a.x + (Math.max(a.x, b.x) - Math.min(a.x, b.x)) * 0.5,
             a.y + (Math.max(a.y, b.y) - Math.min(a.y, b.y)) * 0.5,
-            140,
-            140,
-            0.25,
+            130,
+            130,
+            0.35,
           ),
         ]);
 
@@ -166,7 +166,7 @@ function Run() {
               level.GetWorldPositionAtTileAddress(cell.y),
               250,
               250,
-              0.15,
+              randomInRange(0.05, 0.15),
             ),
           );
         }
@@ -318,8 +318,8 @@ function Run() {
       });
       playerSprite.rotation = angle - Math.PI * 0.5;
       flashlightSprite.rotation = angle;
-      flashlightSprite.x = playerSprite.x + Math.cos(angle - Math.PI * 0.5) * 60;
-      flashlightSprite.y = playerSprite.y + Math.sin(angle - Math.PI * 0.5) * 60;
+      flashlightSprite.x = playerSprite.x + Math.cos(angle - Math.PI * 0.5) * 50;
+      flashlightSprite.y = playerSprite.y + Math.sin(angle - Math.PI * 0.5) * 50;
 
       if (player.currentHealth <= 0) {
         youDiedScreen.style.display = 'flex';
