@@ -45,7 +45,7 @@ Assets.Sounds = [
       { name: 'src', value: 'assets/sounds/sound-gunshot.mp3' },
       { name: 'autoplay', value: false },
       { name: 'loop', value: false },
-      { name: 'volume', value: 0.9 },
+      { name: 'volume', value: 0.2 },
     ],
   },
   {
@@ -69,6 +69,7 @@ export const FLASHLIGHT_TEXTURE = 'flashlight-thin';
 export const ICON_FLASHLIGHT_TEXTURE = 'icon-flashlight';
 export const ICON_HEALTH_TEXTURE = 'health';
 export const CIRCULAR_GRADIENT_TEXTURE = 'circular-gradient';
+export const CIRCULAR_LIGHT_GRADIENT_TEXTURE = 'circular-light-gradient';
 export const DRONE = 'drone';
 export const BLAST = 'blast';
 
@@ -81,6 +82,7 @@ Assets.Textures = [
   ICON_FLASHLIGHT_TEXTURE,
   ICON_HEALTH_TEXTURE,
   CIRCULAR_GRADIENT_TEXTURE,
+  CIRCULAR_LIGHT_GRADIENT_TEXTURE,
   DRONE,
   BLAST,
 ];
@@ -130,7 +132,6 @@ Assets.Sprites = [
       { name: 'width', value: 2000 },
       { name: 'height', value: 2000 },
       { name: 'tileSize', value: [64, 64] },
-      { name: 'zIndex', value: 1 },
     ],
   },
   {

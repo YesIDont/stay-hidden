@@ -10,7 +10,7 @@ export function clamp(value, min = 0, max = 1) {
   return value;
 }
 
-export function mapValueInRangeClamped(value, in_min, in_max, out_min = 0, out_max = 1) {
+export function mapRangeClamped(value, in_min, in_max, out_min = 0, out_max = 1) {
   const inRange = ((value - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
 
   return clamp(inRange, out_min, out_max);

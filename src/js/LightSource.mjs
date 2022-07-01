@@ -1,37 +1,29 @@
 import { CIRCULAR_GRADIENT_TEXTURE } from './Assets.mjs';
-import { newFlickerEffect } from './FlickerEffect.mjs';
 
-export function newLightSource(resources, x, y, width, height, alpha) {
-  const t = resources[CIRCULAR_GRADIENT_TEXTURE].texture;
-  const l = new PIXI.Sprite(t);
+export const lightTints = {
+  red: 0xff0000,
+};
+
+export function newLightSource(resources, x, y, width, height, effect, tint) {
+  const l = new PIXI.Sprite(resources[CIRCULAR_GRADIENT_TEXTURE].texture);
 
   l.width = width;
   l.height = height;
   l.x = x;
   l.y = y;
+  l.effect = effect;
   l.anchor.set(0.5, 0.5);
-  l.flickerEffect = newFlickerEffect(alpha, 2);
+  l.alphaMultiplier = 1;
 
-  // // mask : half, 1/4 etc
+  if (tint) {
+    l.tint = lightTints[tint];
+    l.blendMode = PIXI.BLEND_MODES.ADD;
+    l.alphaMultiplier = 2;
+  }
 
-  l.update = function (timeDelta) {
-    l.alpha = l.flickerEffect.update(timeDelta);
+  l.update = (timeDelta, currentTime) => {
+    l.alpha = l.effect.update(timeDelta, currentTime) * l.alphaMultiplier;
   };
-
-  // s.setSprite = function (type) {
-  //   let sprite;
-
-  //   /* eslint-disable indent */
-  //   switch() {
-  //   // case :
-
-  //   // break;
-  //   default: //omni-full
-  //     break;
-
-  //   }
-  //   /* eslint-enable indent */
-  // };
 
   return l;
 }

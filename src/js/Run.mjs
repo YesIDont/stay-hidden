@@ -3,6 +3,7 @@ import { Assets } from './Assets.mjs';
 import { Collisions } from './collisions/Collisions.mjs';
 import { ECollisions } from './ECollisions.mjs';
 import { Flashlight } from './Flashlight.mjs';
+import { newFlickerEffect } from './FlickerEffect.mjs';
 import { FpsDisplay } from './FpsDisplay.mjs';
 import { Keys, KeysBindings } from './Keys.mjs';
 import { newLightSource } from './LightSource.mjs';
@@ -11,6 +12,7 @@ import { newMaze } from './Maze.mjs';
 import { Monster } from './Monster.mjs';
 import { Mouse } from './Mouse.mjs';
 import { Player } from './Player.mjs';
+import { newPulsatingEffect } from './PulsatingEffect.mjs';
 import { SetupPixiJS } from './SetupPixi.mjs';
 import { GetUI } from './UI.mjs';
 import { GetFOVpolygon } from './utils/GetFOVpolygon.mjs';
@@ -20,7 +22,7 @@ function Run() {
   const {
     clamp,
     randomInRange,
-    mapValueInRangeClamped,
+    mapRangeClamped,
     fillRectangle,
     strokePolygon,
     fillPolygon,
@@ -60,7 +62,7 @@ function Run() {
     maxSpeed: 80,
     sightMaxDistance: 600,
   });
-  const flashlight = new Flashlight(50, 10);
+  const flashlight = new Flashlight(150, 10);
   const UiPadding = 30;
   let VisibleAreaPoly = {};
 
@@ -80,6 +82,8 @@ function Run() {
     UIStage,
     VisibilityContainer,
     Renderer,
+    whiteBackgroundSprite,
+    LightsColorsSprite,
   } = SetupPixiJS(mapSize);
 
   PlayerVisibleAreaMask.lineStyle(0);
@@ -101,10 +105,6 @@ function Run() {
 
     Mouse.attach(aimSightSprite);
 
-    playerSprite.zIndex = 1;
-
-    flashlightSprite.x = player.x;
-    flashlightSprite.y = player.y;
     flashlightSprite.height = player.sightMaxDistance;
 
     iconFlashlight.x = iconFlashlightUsedRed.x = UiPadding;
@@ -119,16 +119,12 @@ function Run() {
 
     iconFlashlight.mask = FlashlightIconMask;
 
-    // const whiteBackgroundSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
-    // whiteBackgroundSprite.width = mapSize.width;
-    // whiteBackgroundSprite.height = mapSize.height;
-    // whiteBackgroundSprite.tint = 0xffffff;
-
     VisibilityContainer.addChild(
       PlayerVisibleAreaMask,
       floorSprite,
       playerSprite,
       droneSprite,
+      LightsColorsSprite,
       // HighlightsChangel,
       Draw,
     );
@@ -146,27 +142,38 @@ function Run() {
     const maze = newMaze(ECollisions, level, false);
     const corridorsLights = maze.pathfindingData
       .map((cell) => {
-        const lights = cell.walls.map(({ a, b }) => [
-          newLightSource(resources, a.x, a.y, 150, 150, 0.15),
-          newLightSource(
-            resources,
-            a.x + (Math.max(a.x, b.x) - Math.min(a.x, b.x)) * 0.5,
-            a.y + (Math.max(a.y, b.y) - Math.min(a.y, b.y)) * 0.5,
-            130,
-            130,
-            0.35,
-          ),
-        ]);
+        const lights = cell.walls.map(({ a, b }) => {
+          const horizontalMiddle = Math.max(a.x, b.x) - Math.min(a.x, b.x);
+          const verticallMiddle = Math.max(a.y, b.y) - Math.min(a.y, b.y);
 
-        if (randomInRange() > 0.5) {
+          return [
+            [0, 0],
+            [a.x + horizontalMiddle * 0.25, a.y + verticallMiddle * 0.25],
+            [a.x + horizontalMiddle * 0.5, a.y + verticallMiddle * 0.5],
+            [a.x + horizontalMiddle * 0.75, a.y + verticallMiddle * 0.75],
+          ].map(([x, y]) =>
+            newLightSource(
+              resources,
+              x,
+              y,
+              110,
+              110,
+              randomInRange() > 0.15 ? newPulsatingEffect(0.1, 0.75) : newFlickerEffect(0.35, 2, true),
+              'red',
+            ),
+          );
+        });
+
+        if (randomInRange() > 0.7) {
           lights.push(
             newLightSource(
               resources,
               level.GetWorldPositionAtTileAddress(cell.x),
               level.GetWorldPositionAtTileAddress(cell.y),
-              250,
-              250,
-              randomInRange(0.05, 0.15),
+              270,
+              270,
+              // newPulsatingEffect(0.5, 0.35),
+              newFlickerEffect(randomInRange(0.1, 0.3), 0.2, true),
             ),
           );
         }
@@ -176,8 +183,6 @@ function Run() {
       .flat(2)
       // remove duplicated lights
       .reduce((acc, curr) => (!acc.find((i) => i.x === curr.x && i.y === curr.y) ? [curr, ...acc] : acc), []);
-
-    console.log(corridorsLights.length);
 
     const monster = new Monster({
       x: level.GetWorldPositionAtTileAddress(level.rows - 1),
@@ -189,6 +194,7 @@ function Run() {
     });
     droneSprite.x = monster.x;
     droneSprite.y = monster.y;
+
     monster.target = player;
 
     const gunBlastSprites = [];
@@ -206,7 +212,7 @@ function Run() {
       gunBlastLightSprites.push(sprite);
     }
 
-    let lastUpdateTime = new Date().getTime();
+    let lastUpdateTime = performance.now();
     let potentials = null;
 
     const { debugDrawSwitch, showBHVSwitch, youDiedScreen, statusBar } = GetUI();
@@ -225,8 +231,8 @@ function Run() {
 
     function GlobalUpdate() {
       const { velocity, friction, halfFOV } = player;
-      const currentTime = new Date().getTime();
-      const timeDelta = (currentTime - lastUpdateTime) / 1000;
+      const currentTime = performance.now();
+      const timeDelta = (currentTime - lastUpdateTime) * 0.001;
       const mouseWorldPosition = Mouse.getMouseWorldPosition(LevelContainer);
       lastUpdateTime = currentTime;
 
@@ -343,19 +349,18 @@ function Run() {
 
       droneSprite.x = monster.x;
       droneSprite.y = monster.y;
-      // droneSprite.alpha *= 50;
 
       if (flashlightSprite.visible) {
         flashlightSprite.alpha = flashlight.flickerEffect.update(timeDelta);
       }
 
-      footstepsSound.volume(mapValueInRangeClamped(velocityLength, 0, player.sprintSpeed));
+      footstepsSound.volume(mapRangeClamped(velocityLength, 0, player.sprintSpeed));
       footstepsSound.rate(player.isSprinting ? 1.5 : 0.9);
 
       // DRAW
       //////////////////////////////////////////////////////////////////////
 
-      // whiteBackgroundSprite.visible = debugDrawSwitch.checked;
+      whiteBackgroundSprite.visible = debugDrawSwitch.checked;
       Draw.visible = !debugDrawSwitch.checked;
 
       DebugDraw.clear();
@@ -374,7 +379,7 @@ function Run() {
       if (flashlightSprite.visible) Renderer.render(flashlightSprite, LightsTexture, false);
 
       corridorsLights.forEach((light) => {
-        light.update(timeDelta);
+        light.update(timeDelta, currentTime);
         Renderer.render(light, LightsTexture, false);
       });
 
@@ -443,7 +448,7 @@ function Run() {
       // Draw mask to indicate lost health
       const healthIconWidth = iconHealth.width;
       const healthIconHeight = iconHealth.height;
-      const healthLostNormalized = mapValueInRangeClamped(player.maxHealth - player.currentHealth, 0, player.maxHealth);
+      const healthLostNormalized = mapRangeClamped(player.maxHealth - player.currentHealth, 0, player.maxHealth);
       fillRectangle(
         HealthMask,
         iconHealth.x + healthIconWidth * healthLostNormalized,

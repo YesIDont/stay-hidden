@@ -2,7 +2,7 @@
 import { Assets } from './Assets.mjs';
 import { GetCanvasAspectRatio, GetWindowInnerSize } from './utils/Utils.mjs';
 
-export function SetupPixiJS(MapSize) {
+export function SetupPixiJS(mapSize) {
   const Pixi = PIXI;
   const GraphicsEngine = Pixi.Application;
   const Container = Pixi.Container;
@@ -35,23 +35,31 @@ export function SetupPixiJS(MapSize) {
   const FlashlightIconMask = new Pixi.Graphics();
   const HealthMask = new Pixi.Graphics();
 
+  const whiteBackgroundSprite = new Pixi.Sprite(Pixi.Texture.WHITE);
+  whiteBackgroundSprite.width = mapSize.width;
+  whiteBackgroundSprite.height = mapSize.height;
+  whiteBackgroundSprite.zIndex = 50;
+
   const LevelContainer = new Container();
   Stage.addChild(LevelContainer);
   LevelContainer.zIndex = 10;
-  LevelContainer.width = MapSize.width;
-  LevelContainer.height = MapSize.height;
+  LevelContainer.width = mapSize.width;
+  LevelContainer.height = mapSize.height;
   LevelContainer.mask = PlayerVisibleAreaMask;
 
-  const LightsTexture = Pixi.RenderTexture.create({ width: MapSize.width, height: MapSize.height });
+  const LightsTexture = Pixi.RenderTexture.create(mapSize);
   const LightsSprite = new Pixi.Sprite(LightsTexture);
+
+  const LightsColorsSprite = new Pixi.Sprite(LightsTexture);
+  LightsColorsSprite.blendMode = Pixi.BLEND_MODES.ADD;
+
   const VisibilityContainer = new Container();
   VisibilityContainer.mask = LightsSprite;
-  VisibilityContainer.addChild(LightsSprite);
-  LevelContainer.addChild(VisibilityContainer);
   VisibilityContainer.zIndex = 10;
   VisibilityContainer.sortableChildren = true;
-  VisibilityContainer.width = MapSize.width;
-  VisibilityContainer.height = MapSize.height;
+  VisibilityContainer.width = mapSize.width;
+  VisibilityContainer.height = mapSize.height;
+  LevelContainer.addChild(VisibilityContainer);
 
   const UIStage = new Container();
   Stage.addChild(UIStage);
@@ -76,6 +84,8 @@ export function SetupPixiJS(MapSize) {
   UIDraw.zIndex = 100;
   UIStage.addChild(UIDraw);
 
+  LevelContainer.addChild(whiteBackgroundSprite, /* LightsColorsSprite, */ LightsSprite);
+
   return {
     DebugDraw,
     Draw,
@@ -95,5 +105,8 @@ export function SetupPixiJS(MapSize) {
     UIDraw,
     UIStage,
     VisibilityContainer,
+    LightsSprite,
+    whiteBackgroundSprite,
+    LightsColorsSprite,
   };
 }

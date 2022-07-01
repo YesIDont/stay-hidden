@@ -61,6 +61,7 @@ export const Monster = function ({ x, y, size, gridProps, player, sounds }) {
   // array of points to follow
   m.scent = [];
   m.spriteAngle = 0;
+  m.timeDelta = 0;
 
   m.target = undefined;
   m.targetInView = false;
@@ -79,29 +80,40 @@ export const Monster = function ({ x, y, size, gridProps, player, sounds }) {
   m.bullets = [];
   m.reloadTime = 3000;
   m.cannonDamage = 0;
+  m.reload = () => {
+    m.ammo = m.magazineSize;
+    m.rateOfFireCounter = 0;
+  };
+  m.updateBullets = (b) => {
+    if (b.fired) {
+      b.update(m.timeDelta, m.result);
+    }
+  };
 
-  m.setDirection = function (x, y) {
+  m.setDirection = (x, y) => {
     const length = Math.sqrt(x * x + y * y);
     m.direction.x = x / length;
     m.direction.y = y / length;
   };
 
-  m.solveCollisions = function (Result, timeDelta) {
+  m.solveCollisions = (Result, timeDelta) => {
     const potentials = m.potentials();
     for (const body of potentials) {
       if (body.hasTags('player', 'obstacle') && m.collides(body, Result)) {
-        body.block(this, Result);
+        body.block(m, Result);
       }
     }
   };
 
-  m.move = function (timeDelta) {
+  m.move = (timeDelta) => {
     m.x += m.direction.x * m.speed * timeDelta;
     m.y += m.direction.y * m.speed * timeDelta;
   };
 
-  m.update = function (timeDelta, tileSize, Result) {
-    const { x, y, target, FOVarea } = this;
+  m.update = (timeDelta, tileSize, Result) => {
+    m.timeDelta = timeDelta;
+    m.result = Result;
+    const { x, y, target, FOVarea } = m;
     const { x: tx, y: ty } = target;
     FOVarea.x = x;
     FOVarea.y = y;
@@ -143,10 +155,7 @@ export const Monster = function ({ x, y, size, gridProps, player, sounds }) {
             sounds.gunshot.play();
           }
         } else {
-          setTimeout(() => {
-            m.ammo = m.magazineSize;
-            m.rateOfFireCounter = 0;
-          }, m.reloadTime);
+          setTimeout(m.reload, m.reloadTime);
         }
       }
     }
@@ -154,13 +163,9 @@ export const Monster = function ({ x, y, size, gridProps, player, sounds }) {
     m.targetInView = targetInView;
     if (!targetInView) m.canFireAtTarget = false;
 
-    m.bullets.forEach((b) => {
-      if (b.fired) {
-        b.update(timeDelta, Result);
-      }
-    });
+    m.bullets.forEach(m.updateBullets);
 
-    const { scent, pathfinder } = this;
+    const { scent, pathfinder } = m;
     const monsterCell = pathfinder.grid.getCellUnderPointer(m.x, m.y, tileSize);
     const playerCell = pathfinder.grid.getCellUnderPointer(m.player.x, m.player.y, tileSize);
 
